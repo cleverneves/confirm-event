@@ -1,6 +1,9 @@
-# Mariana e Victor — confirmação de presença
+# Confirm Event
 
-Site para confirmar presença na festa de aniversário compartilhada da Mariana e do Victor: um link público, duas listas, um painel para quem organiza.
+Site para o organizador criar eventos e receber confirmação de presença: um link público por evento e um painel autenticado.
+
+- [Visão do produto](docs/project-overview.md)
+- [Arquitetura](docs/architecture.md)
 
 ## Stack
 
@@ -11,25 +14,32 @@ Site para confirmar presença na festa de aniversário compartilhada da Mariana 
 ## Configuração
 
 1. Crie um projeto no [Supabase](https://supabase.com).
-2. Rode a migration em `supabase/migrations/20260917120000_init_confirmation.sql` no SQL Editor (ou `supabase db push` se o CLI estiver ligado ao projeto).
+2. Aplique as migrations em `supabase/migrations/` (SQL Editor, na ordem dos arquivos, ou `supabase db push` se o CLI estiver ligado ao projeto).
 3. Em Authentication:
-   - crie o único usuário organizador (e-mail e senha);
+   - crie o usuário organizador (e-mail e senha);
    - em **Users**, marque o e-mail como confirmado (ou desligue **Confirm email** em Providers → Email);
    - desligue o cadastro público.
-4. Copie `.env.example` para `.env.local` e preencha:
+4. Em Authentication → URL Configuration, permita o redirect `{origem-da-app}/auth/confirm` (necessário para recuperar senha).
+5. Copie `.env.example` para `.env.local` e preencha:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
-5. Instale e rode:
+6. Instale e rode:
 
 ```bash
 npm install
 npm run dev
 ```
 
-- Página pública: [http://localhost:3000](http://localhost:3000)
-- Painel: [http://localhost:3000/painel](http://localhost:3000/painel)
+Outros scripts: `npm run build`, `npm start`, `npm run typecheck`.
+
+## Rotas locais
+
+- Início: [http://localhost:3000](http://localhost:3000) (vai para o painel ou o login)
 - Login: [http://localhost:3000/login](http://localhost:3000/login)
+- Recuperar senha: [http://localhost:3000/recuperar-senha](http://localhost:3000/recuperar-senha)
+- Painel: [http://localhost:3000/painel](http://localhost:3000/painel)
+- Página pública de um evento: `http://localhost:3000/{slug}`
