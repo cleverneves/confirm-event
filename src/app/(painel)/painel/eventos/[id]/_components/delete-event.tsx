@@ -16,13 +16,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 
 export function DeleteEvent({ eventId }: { eventId: number }) {
@@ -39,40 +32,35 @@ export function DeleteEvent({ eventId }: { eventId: number }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Excluir evento</CardTitle>
-        <CardDescription>
-          Apaga o evento, os links e todas as confirmações. Não dá para desfazer.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <AlertDialog>
-          <AlertDialogTrigger render={<Button variant="destructive" />}>
-            Excluir evento
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Excluir este evento?</AlertDialogTitle>
-              <AlertDialogDescription>
-                O evento, os links (atual e antigos) e as confirmações deste
-                evento serão apagados. Essa ação não pode ser desfeita.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction
-                variant="destructive"
-                disabled={isDeleting}
-                onClick={handleDelete}
-              >
-                {isDeleting ? <Spinner data-icon="inline-start" /> : null}
-                Excluir
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-3 border-t border-border pt-8">
+      <p className="text-sm text-muted-foreground">
+        Apaga o evento, os links e todas as confirmações. Não dá para desfazer.
+      </p>
+      <AlertDialog>
+        <AlertDialogTrigger render={<Button variant="destructive" className="w-fit" />}>
+          Excluir evento
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir este evento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O evento, os links (atual e antigos) e as confirmações deste
+              evento serão apagados. Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={handleDelete}
+            >
+              {isDeleting ? <Spinner data-icon="inline-start" /> : null}
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }

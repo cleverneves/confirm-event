@@ -1,21 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CopyIcon, ExternalLinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { updateEventSlugAction } from "../_actions/update-event-slug";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Field,
   FieldError,
@@ -47,6 +42,7 @@ export function EventLink({
   slug: string;
 }) {
   const [origin, setOrigin] = useState("");
+  const [isEditingSlug, setIsEditingSlug] = useState(false);
   const router = useRouter();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -86,29 +82,37 @@ export function EventLink({
     }
 
     toast.success(result.message ?? "Link atualizado.");
+    setIsEditingSlug(false);
     router.refresh();
   }
 
   const isSubmitting = form.formState.isSubmitting;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Link do evento</CardTitle>
-        <CardDescription>
-          Copie o endereço atual para enviar aos convidados. Trechos antigos
-          deste evento passam a abrir o atual.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-muted-foreground">Endereço atual</p>
-          <p className="break-all font-medium">{currentUrl}</p>
-          <Button type="button" variant="outline" className="w-fit" onClick={handleCopy}>
-            Copiar link
+    <div className="flex flex-col gap-4 border-t border-border pt-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+          <p className="text-sm text-muted-foreground">Link personalizado:</p>
+          <p className="truncate font-medium">{currentUrl}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" onClick={handleCopy}>
+            <CopyIcon data-icon="inline-start" />
+            Copiar Link do Convite
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            render={<Link href={`/${slug}`} target="_blank" rel="noreferrer" />}
+            nativeButton={false}
+          >
+            <ExternalLinkIcon data-icon="inline-start" />
+            Visualizar Página
           </Button>
         </div>
+      </div>
 
+      {isEditingSlug ? (
         <form onSubmit={form.handleSubmit(handleSubmit)}>
           <FieldGroup>
             <Controller
@@ -128,13 +132,34 @@ export function EventLink({
                 </Field>
               )}
             />
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
-              Alterar trecho
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
+                Alterar trecho
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  form.reset({ slug });
+                  setIsEditingSlug(false);
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
           </FieldGroup>
         </form>
-      </CardContent>
-    </Card>
+      ) : (
+        <Button
+          type="button"
+          variant="ghost"
+          className="w-fit"
+          onClick={() => setIsEditingSlug(true)}
+        >
+          Alterar trecho do link
+        </Button>
+      )}
+    </div>
   );
 }

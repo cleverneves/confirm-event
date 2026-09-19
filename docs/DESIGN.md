@@ -1,58 +1,63 @@
 ---
-name: Nocturne VIP
+name: Confirm Event
 colors:
-  surface: '#061423'
-  surface-dim: '#061423'
-  surface-bright: '#2d3a4a'
-  surface-container-lowest: '#020f1e'
-  surface-container-low: '#0f1c2c'
-  surface-container: '#132030'
-  surface-container-high: '#1e2b3b'
-  surface-container-highest: '#283646'
-  on-surface: '#d6e4f9'
-  on-surface-variant: '#c5c6cd'
-  inverse-surface: '#d6e4f9'
-  inverse-on-surface: '#243141'
-  outline: '#8f9097'
-  outline-variant: '#45474d'
-  surface-tint: '#bbc6e2'
-  primary: '#bbc6e2'
-  on-primary: '#263046'
-  primary-container: '#1b263b'
-  on-primary-container: '#828da7'
-  inverse-primary: '#545e76'
-  secondary: '#afc9ea'
-  on-secondary: '#17324d'
-  secondary-container: '#2f4865'
-  on-secondary-container: '#9eb7d8'
-  tertiary: '#b2c8e7'
-  on-tertiary: '#1b324a'
-  tertiary-container: '#0f273f'
-  on-tertiary-container: '#798fab'
-  error: '#ffb4ab'
-  on-error: '#690005'
-  error-container: '#93000a'
-  on-error-container: '#ffdad6'
-  primary-fixed: '#d7e2ff'
-  primary-fixed-dim: '#bbc6e2'
-  on-primary-fixed: '#101b30'
-  on-primary-fixed-variant: '#3c475d'
-  secondary-fixed: '#d1e4ff'
-  secondary-fixed-dim: '#afc9ea'
-  on-secondary-fixed: '#001d36'
-  on-secondary-fixed-variant: '#2f4865'
-  tertiary-fixed: '#d1e4ff'
-  tertiary-fixed-dim: '#b2c8e7'
-  on-tertiary-fixed: '#031d34'
-  on-tertiary-fixed-variant: '#334861'
-  background: '#061423'
-  on-background: '#d6e4f9'
-  surface-variant: '#283646'
+  surface: '#FFFFFF'
+  surface-dim: '#F3F5F7'
+  surface-bright: '#FFFFFF'
+  surface-container-lowest: '#FFFFFF'
+  surface-container-low: '#F3F5F7'
+  surface-container: '#FFFFFF'
+  surface-container-high: '#E8ECF0'
+  surface-container-highest: '#E0E1DD'
+  on-surface: '#0D1B2A'
+  on-surface-variant: '#415A77'
+  inverse-surface: '#0D1B2A'
+  inverse-on-surface: '#E0E1DD'
+  outline: '#778DA9'
+  outline-variant: '#415A77'
+  surface-tint: '#415A77'
+  primary: '#0D1B2A'
+  on-primary: '#E0E1DD'
+  primary-container: '#E8ECF0'
+  on-primary-container: '#0D1B2A'
+  inverse-primary: '#E0E1DD'
+  secondary: '#415A77'
+  on-secondary: '#E0E1DD'
+  secondary-container: '#E8ECF0'
+  on-secondary-container: '#0D1B2A'
+  tertiary: '#778DA9'
+  on-tertiary: '#0D1B2A'
+  tertiary-container: '#E8ECF0'
+  on-tertiary-container: '#415A77'
+  error: '#E11D48'
+  on-error: '#FFFFFF'
+  error-container: '#FDE8EC'
+  on-error-container: '#E11D48'
+  background: '#F3F5F7'
+  on-background: '#0D1B2A'
+  surface-variant: '#E8ECF0'
   abyssal-navy: '#0D1B2A'
   indigo-slate: '#1B263B'
   muted-steel: '#415A77'
   mist-blue: '#778DA9'
   frost-white: '#E0E1DD'
+  canvas: '#F3F5F7'
+  card: '#FFFFFF'
+  status-confirmed: '#15803D'
+  status-pending: '#B45309'
+  status-declined: '#E11D48'
+dark:
+  background: '#0D1B2A'
+  on-background: '#E0E1DD'
+  card: '#1B263B'
+  on-card: '#E0E1DD'
+  primary: '#E0E1DD'
+  on-primary: '#0D1B2A'
+  muted: '#283646'
+  muted-foreground: '#778DA9'
+  border: 'rgba(119, 141, 169, 0.18)'
+  input: '#415A77'
+  destructive: '#F87171'
   status-confirmed: '#4ADE80'
   status-pending: '#FBBF24'
   status-declined: '#F87171'
@@ -144,29 +149,30 @@ spacing:
 
 ## Brand & Style
 
-The design system establishes an ultra-exclusive nighttime gala aesthetic tailored for curated guest tier management, bespoke digital RSVP journeys, and high-profile private event access. It transitions away from botanical tones into an architectural, oceanic midnight world where deep navy depths provide a focused canvas for pristine typographic clarity and atmospheric presence.
+The design system is an exclusive hospitality cockpit for curated guest lists and digital RSVP journeys. The **default theme is light**: a daylight salon of frost canvas, white cards, and abyssal-navy type. The same five brand colors (navy, slate, steel, mist, frost) invert in dark mode as **Nocturne VIP**.
 
 The aesthetic fuses **Minimalism** with restrained **Glassmorphism**:
-- **Visual Identity:** Curated nocturnal luxury. The deep obsidian-navy `#0D1B2A` forms an immersive, light-absorbing foundation, complemented by structured indigo surfaces, frosted translucent glass barriers, and subtle mist highlights.
+- **Visual Identity:** Architectural luxury in daylight. Frost canvas `#F3F5F7` and white cards `#FFFFFF` carry navy typography `#0D1B2A`, steel structure `#415A77`, and mist secondary text `#778DA9`.
 - **Personality:** Discerning, architectural, sovereign, and composed.
 - **Audience:** High-end event producers, luxury gala coordinators, private club concierges, and VIP guest lists demanding discretion and effortless elegance.
-- **Tone:** Polished hospitality and exclusive access ("Hospitalidade Noturna de Alto Padrão"). Interactions are crisp, fluid, and deliberate.
+- **Tone:** Polished hospitality ("Hospitalidade de Alto Padrão"). Interactions are crisp, fluid, and deliberate.
+- **Dark (Nocturne):** Optional `.dark` mode. Canvas `#0D1B2A`, cards `#1B263B`, frost typography `#E0E1DD`. Same personality, inverted elevation.
 
 ## Colors
 
-The palette is derived directly from the nocturnal reference spectrum, operating natively in dark mode to mirror late-evening galas and exclusive private salons.
+The palette is the same brand spectrum in both themes. Light is the product default (`:root`). Dark lives only under `.dark`.
 
-### Palette Roles
-- **Primary Canvas & Dark Neutrals (`#0D1B2A`):** Abyssal Navy. Anchors the viewport canvas, modal underlays, and deepest elevation tiers. Delivers zero eye-strain during evening events.
-- **Primary Interactive & Key Surfaces (`#1B263B`):** Dark Indigo Slate. Deployed across interactive elements, container surfaces, navigation headers, and primary card backgrounds.
-- **Secondary Accent & Structure (`#415A77`):** Muted Steel Blue. Supplies intermediate contrast for structural divider lines, secondary action buttons, input borders, and metric badge borders.
-- **Tertiary & Atmospheric Mist (`#778DA9`):** Mist Blue. Applied to delicate outlines, active indicator pips, icon accents, secondary typography, and frosted border glows.
-- **Contrasting Neutral (`#E0E1DD`):** Frost White. Serves as the primary typography color, high-contrast badges, light status pills, and prominent CTAs requiring radiant contrast against the navy background.
+### Palette Roles (Light, default)
+- **Primary Canvas (`#F3F5F7`):** Cool frost gray. Page background, modal underlays behind white sheets.
+- **Key Surfaces (`#FFFFFF`):** Cards, header, popovers, registry tables.
+- **Primary Interactive (`#0D1B2A`):** Abyssal Navy. Headlines, body text, and primary CTAs.
+- **Secondary Accent & Structure (`#415A77`):** Muted Steel. Secondary typography, metric labels, input focus, outline borders.
+- **Tertiary Mist (`#778DA9`):** Input borders, icon accents, placeholders, primary hover fill.
+- **Contrasting Neutral (`#E0E1DD`):** Frost White. Text and icons on navy CTAs.
 
 ### Semantic Status Colors
-- **Confirmed (`#4ADE80`):** Soft luminous emerald for verified RSVPs and successful check-ins.
-- **Pending (`#FBBF24`):** Warm amber for pending invitations, waitlists, and transfer requests.
-- **Declined (`#F87171`):** Muted coral red for cancellations and revoked credentials.
+- **Light:** Confirmed `#15803D`, Pending `#B45309`, Declined `#E11D48`.
+- **Dark (Nocturne):** Confirmed `#4ADE80`, Pending `#FBBF24`, Declined `#F87171`.
 
 ## Typography
 
@@ -174,7 +180,7 @@ The typographic system pairs the geometric, confident curves of `Plus Jakarta Sa
 
 - **Headlines (`Plus Jakarta Sans`):** Applied to gala titles, hero metrics, attendee counts, and modal headers. Its contemporary proportions convey forward-looking sophistication without archaic serif ornaments.
 - **Body & Tabular Interface (`Inter`):** Applied to tabular guest registries, QR ticket passes, timestamp indicators, and field descriptions. Its neutral vertical metrics eliminate layout drift in data-intensive operational dashboards.
-- **Labels & Micro-data:** Micro-labels and access tier identifiers utilize `Inter` in bold or semibold weights with uppercase letter-spacing (`+0.06em` to `+0.08em`) to enforce structural hierarchy in low-light environments.
+- **Labels & Micro-data:** Micro-labels and access tier identifiers utilize `Inter` in bold or semibold weights with uppercase letter-spacing (`+0.06em` to `+0.08em`) to enforce structural hierarchy.
 
 ## Layout & Spacing
 
@@ -192,13 +198,19 @@ Layouts follow a fluid, responsive 12-column grid anchored inside a maximum boun
 
 ## Elevation & Depth
 
-Visual hierarchy in this system is driven by tonal stacking, low-contrast mist-tinted outlines, and frosted glass backdrops rather than sharp, muddy drop shadows.
+Visual hierarchy is driven by tonal stacking, hairline steel outlines, and soft navy-tinted shadows — not muddy gray blobs.
 
-### Depth Hierarchy
-- **Level 0 (Atmospheric Canvas):** `#0D1B2A`. Deep, zero-elevation foundation.
-- **Level 1 (Panels & Card Containers):** Solid `#1B263B` surface or semi-translucent `rgba(27, 38, 59, 0.7)` with `12px` backdrop blur, bound by a 1px border in `rgba(119, 141, 169, 0.18)`. Ambient lift: `0 4px 20px rgba(0, 0, 0, 0.25)`.
-- **Level 2 (Hover States, Flyout Menus & Tooltips):** Surface elevated with an indigo glow: `0 12px 28px -4px rgba(13, 27, 42, 0.6), 0 0 0 1px rgba(119, 141, 169, 0.3)`.
-- **Level 3 (VIP Pass Overlays, RSVP Modals & Drawers):** Elevated above a dimmed backdrop (`rgba(13, 27, 42, 0.85)` with `16px` backdrop filter). Box shadow: `0 24px 48px -12px rgba(0, 0, 0, 0.7)`. Border treated with subtle top-lit mist gradient: `rgba(224, 225, 221, 0.2)` transitioning to `rgba(119, 141, 169, 0.1)`.
+### Depth Hierarchy (Light, default)
+- **Level 0 (Atmospheric Canvas):** `#F3F5F7`.
+- **Level 1 (Panels & Card Containers):** Solid `#FFFFFF` with a 1px border `rgba(65, 90, 119, 0.16)`. Ambient lift: `0 4px 20px rgba(13, 27, 42, 0.06)`. Header may use `rgba(255, 255, 255, 0.8)` with `12px` backdrop blur.
+- **Level 2 (Hover States, Flyout Menus & Tooltips):** `0 12px 28px -4px rgba(13, 27, 42, 0.12), 0 0 0 1px rgba(65, 90, 119, 0.12)`.
+- **Level 3 (RSVP Modals & Drawers):** Dimmed backdrop `rgba(13, 27, 42, 0.45)` with `16px` backdrop filter. Box shadow: `0 24px 48px -12px rgba(13, 27, 42, 0.18)`.
+
+### Dark (Nocturne)
+- **Level 0:** `#0D1B2A`.
+- **Level 1:** `#1B263B` or `rgba(27, 38, 59, 0.7)` with `12px` blur, 1px `rgba(119, 141, 169, 0.18)`. Lift: `0 4px 20px rgba(0, 0, 0, 0.25)`.
+- **Level 2:** `0 12px 28px -4px rgba(13, 27, 42, 0.6), 0 0 0 1px rgba(119, 141, 169, 0.3)`.
+- **Level 3:** Backdrop `rgba(13, 27, 42, 0.85)` with `16px` blur. Shadow: `0 24px 48px -12px rgba(0, 0, 0, 0.7)`.
 
 ## Shapes
 
@@ -212,27 +224,37 @@ The shape vocabulary uses roundedness level `2` (`0.5rem` / `8px` base curve). T
 ## Components
 
 ### Buttons
-- **Primary Action ("Confirmar Presença", "Validar Acesso"):** High-contrast Frost White background (`#E0E1DD`) with Abyssal Navy text (`#0D1B2A`), font weight 600. On hover, shifts to Mist Blue (`#778DA9`) with white text and a faint indigo glow.
-- **Secondary ("Exportar Lista", "Filtros"):** Navy Slate surface (`#1B263B`), 1px border (`#415A77`), text `#E0E1DD`. On hover, the border brightens to `#778DA9`.
-- **Ghost / Destructive ("Recusar Convite", "Remover"):** Transparent background with text in `#778DA9` or semantic red `#F87171`, shifting to a muted wash on hover.
+- **Primary Action ("Confirmar Presença", "Novo Evento"):** Abyssal Navy background (`#0D1B2A`) with Frost White text (`#E0E1DD`), font weight 600. On hover, fill shifts to Mist Blue (`#778DA9`) with frost text.
+- **Secondary ("Visualizar Página", "Filtros"):** White surface, 1px border (`#778DA9`), navy text. On hover, the border brightens to `#415A77`.
+- **Ghost / Destructive ("Remover"):** Transparent background with text in `#415A77` or semantic red `#E11D48`, shifting to a muted wash on hover.
+
+**Dark (Nocturne):** Primary is Frost White on navy; secondary is slate `#1B263B` with `#415A77` border and frost text; destructive uses `#F87171`.
 
 ### Guest Status Chips & Access Badges
 - Pill-shaped (`rounded-full`), padded with `0.25rem 0.75rem`, uppercase label in `label-sm` font.
-  - **Confirmado:** Background `rgba(74, 222, 128, 0.12)`, text `#4ADE80`, 1px border `rgba(74, 222, 128, 0.25)`, glowing green dot.
-  - **Pendente:** Background `rgba(251, 191, 36, 0.12)`, text `#FBBF24`, 1px border `rgba(251, 191, 36, 0.25)`, amber dot.
-  - **Recusado:** Background `rgba(248, 113, 113, 0.12)`, text `#F87171`, 1px border `rgba(248, 113, 113, 0.25)`, red dot.
-  - **VIP / Black Tier:** Background `#0D1B2A`, text `#E0E1DD`, 1px border `#778DA9`, subtle frosted shimmer.
+  - **Confirmado (light):** Background `rgba(21, 128, 61, 0.12)`, text `#15803D`, 1px border `rgba(21, 128, 61, 0.25)`.
+  - **Pendente (light):** Background `rgba(180, 83, 9, 0.12)`, text `#B45309`, 1px border `rgba(180, 83, 9, 0.25)`.
+  - **Recusado (light):** Background `rgba(225, 29, 72, 0.12)`, text `#E11D48`, 1px border `rgba(225, 29, 72, 0.25)`.
+  - **VIP / Black Tier:** Background `#0D1B2A`, text `#E0E1DD`, 1px border `#778DA9`.
+
+**Dark (Nocturne):** Confirmado `#4ADE80`, Pendente `#FBBF24`, Recusado `#F87171`, each on a 12% wash of the same hue.
 
 ### Form Inputs & Selects
-- Inputs feature background `#0D1B2A`, 1px border in `#415A77`, text in `#E0E1DD`, and placeholder in `#778DA9`.
-- **Focus State:** Border transitions to `#778DA9` with a subtle focus halo: `0 0 0 3px rgba(119, 141, 169, 0.2)`. 
+- Inputs feature background `#FFFFFF`, 1px border in `#778DA9`, text in `#0D1B2A`, and placeholder in `#415A77`.
+- **Focus State:** Border transitions to `#415A77` with a subtle focus halo: `0 0 0 3px rgba(65, 90, 119, 0.2)`.
 - **Height & Padding:** Minimum 44px touch height, padded with `space-md` horizontally.
 
+**Dark (Nocturne):** Background `#0D1B2A`, border `#415A77`, text `#E0E1DD`, placeholder `#778DA9`, focus ring `rgba(119, 141, 169, 0.2)`.
+
 ### Cards & Metric Panels
-- **Telemetry Cards ("Check-ins Concluídos", "Capacidade da Lista VIP"):** Container in `#1B263B` with a 1px border in `rgba(119, 141, 169, 0.15)`. Stat values rendered in `display-lg-mobile` using `Plus Jakarta Sans` in `#E0E1DD`; supporting text in `body-sm` using `Inter` in `#778DA9`.
-- **RSVP Digital Invitation Card:** Frosted `#1B263B` glass container (`backdrop-filter: blur(12px)`), accented with a hairline border in `#415A77`, displaying the event header in `Plus Jakarta Sans` bold.
+- **Telemetry Cards:** Container in `#FFFFFF` with a 1px border in `rgba(65, 90, 119, 0.16)`. Stat values rendered in `display-lg-mobile` using `Plus Jakarta Sans` in `#0D1B2A`; supporting text in `body-sm` using `Inter` in `#415A77`. Positive deltas use `#15803D`.
+- **RSVP Digital Invitation Card:** White or frosted white glass (`backdrop-filter: blur(12px)`), hairline border `#778DA9`, event header in `Plus Jakarta Sans` bold.
+
+**Dark (Nocturne):** Cards `#1B263B`, stats in `#E0E1DD`, supporting text `#778DA9`, positive deltas `#4ADE80`.
 
 ### Tables & Guest Lists
-- Dark mode table rows (`#1B263B`) separated by razor-thin borders (`rgba(119, 141, 169, 0.1)`).
-- Hover state lights the row with an ambient mist wash (`rgba(119, 141, 169, 0.05)`).
-- Rapid check-in trigger button appears fixed in the rightmost cell.
+- Light table rows (`#FFFFFF`) separated by razor-thin borders (`rgba(65, 90, 119, 0.12)`).
+- Hover state washes the row with `rgba(65, 90, 119, 0.05)`.
+- Rapid action controls stay in the rightmost cell.
+
+**Dark (Nocturne):** Rows `#1B263B`, separators `rgba(119, 141, 169, 0.1)`, hover `rgba(119, 141, 169, 0.05)`.

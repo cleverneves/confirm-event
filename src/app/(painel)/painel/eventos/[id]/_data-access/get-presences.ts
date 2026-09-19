@@ -10,13 +10,17 @@ export type PresencesResult =
   | {
       confirmations: Presence[];
       total: number;
+      confirmedLast24h: number;
       error?: undefined;
     }
   | {
       confirmations: Presence[];
       total: number;
+      confirmedLast24h: number;
       error: string;
     };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function getPresences(eventId: number): Promise<PresencesResult> {
   const { supabase } = await requireOrganizer();
@@ -26,12 +30,13 @@ export async function getPresences(eventId: number): Promise<PresencesResult> {
       .from("confirmations")
       .select("id, full_name, created_at")
       .eq("event_id", eventId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false });
 
     if (error) {
       return {
         confirmations: [],
         total: 0,
+        confirmedLast24h: 0,
         error: "Não foi possível obter as presenças.",
       };
     }
@@ -42,14 +47,21 @@ export async function getPresences(eventId: number): Promise<PresencesResult> {
       createdAt: row.created_at,
     }));
 
+    const cutoff = new Date(Date.now() - DAY_MS).toISOString();
+    const confirmedLast24h = confirmations.filter(
+      (confirmation) => confirmation.createdAt >= cutoff
+    ).length;
+
     return {
       confirmations,
       total: confirmations.length,
+      confirmedLast24h,
     };
   } catch {
     return {
       confirmations: [],
       total: 0,
+      confirmedLast24h: 0,
       error: "Não foi possível obter as presenças.",
     };
   }

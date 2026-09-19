@@ -27,3 +27,13 @@ export function formatEventDate(eventDate: string) {
 export function formatEventTime(eventTime: string) {
   return eventTime.slice(0, 5);
 }
+
+export function formatConfirmationDateTime(iso: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  }).format(new Date(iso));
+}

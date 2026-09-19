@@ -1,10 +1,7 @@
-"use client";
-
 import Link from "next/link";
 
 import { createEventAction } from "../_actions/create-event";
 import { EventFieldsForm } from "../../../_components/event-fields-form";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,15 +13,13 @@ import {
 export function CreateEventContent() {
   return (
     <div className="flex flex-col gap-6">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-fit"
-        render={<Link href="/painel" />}
-        nativeButton={false}
-      >
-        Voltar aos eventos
-      </Button>
+      <nav className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <Link href="/painel" className="hover:text-foreground">
+          Meus Eventos
+        </Link>
+        <span aria-hidden="true">/</span>
+        <span className="text-foreground">Novo evento</span>
+      </nav>
 
       <Card>
         <CardHeader>

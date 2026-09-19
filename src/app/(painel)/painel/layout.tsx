@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 
-import { logoutAction } from "./_actions/logout";
-import { Button } from "@/components/ui/button";
+import { PainelFooter } from "./_components/painel-footer";
+import { PainelHeader } from "./_components/painel-header";
 import { requireOrganizer } from "@/lib/auth/require-organizer";
 
 export default async function PainelLayout({
@@ -10,26 +9,15 @@ export default async function PainelLayout({
 }: {
   children: ReactNode;
 }) {
-  await requireOrganizer();
+  const { user } = await requireOrganizer();
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="border-b border-border/70 bg-card/80">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
-          <Link href="/painel" className="flex flex-col">
-            <p className="text-sm text-muted-foreground">Organização</p>
-            <p className="font-heading text-lg leading-none">Painel</p>
-          </Link>
-          <form action={logoutAction}>
-            <Button type="submit" variant="outline">
-              Sair
-            </Button>
-          </form>
-        </div>
-      </header>
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 py-8">
+      <PainelHeader email={user.email ?? ""} />
+      <div className="mx-auto flex w-full max-w-[1360px] flex-1 flex-col px-4 py-6 md:px-6 md:py-10">
         {children}
       </div>
+      <PainelFooter />
     </div>
   );
 }

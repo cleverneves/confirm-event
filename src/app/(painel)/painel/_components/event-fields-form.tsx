@@ -55,11 +55,13 @@ export function EventFieldsForm({
   currentDate,
   submitLabel,
   onSubmit,
+  onSuccess,
 }: {
   defaultValues: EventFields;
   currentDate?: string;
   submitLabel: string;
   onSubmit: (values: EventFields) => Promise<SubmitResult>;
+  onSuccess?: () => void;
 }) {
   const schema = useMemo(() => schemaFor(currentDate), [currentDate]);
   const router = useRouter();
@@ -94,6 +96,7 @@ export function EventFieldsForm({
     if (result.message) {
       toast.success(result.message);
     }
+    onSuccess?.();
     router.refresh();
   }
 

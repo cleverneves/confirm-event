@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MapPinIcon } from "lucide-react";
 
 import type { EventListItem } from "../_data-access/get-events";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { formatEventDate } from "@/lib/event-date";
+import { formatEventDate, formatEventTime } from "@/lib/event-date";
 
 export function EventList({ events }: { events: EventListItem[] }) {
   if (events.length === 0) {
@@ -31,16 +32,22 @@ export function EventList({ events }: { events: EventListItem[] }) {
   }
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="flex flex-col gap-4">
       {events.map((event) => (
         <li key={event.id}>
           <Link
             href={`/painel/eventos/${event.id}`}
-            className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card px-4 py-3 hover:bg-muted/40"
+            className="flex flex-col gap-3 rounded-lg bg-card p-5 shadow-panel ring-1 ring-muted-foreground/20 transition-shadow hover:shadow-elevated"
           >
-            <p className="font-heading text-lg leading-none">{event.title}</p>
+            <p className="font-heading text-xl leading-none tracking-tight">
+              {event.title}
+            </p>
             <p className="text-sm text-muted-foreground">
-              {formatEventDate(event.eventDate)}
+              {formatEventDate(event.eventDate)} · {formatEventTime(event.eventTime)}
+            </p>
+            <p className="flex items-center gap-2 text-sm text-muted-foreground [&_svg]:size-4">
+              <MapPinIcon />
+              {event.location}
             </p>
           </Link>
         </li>
