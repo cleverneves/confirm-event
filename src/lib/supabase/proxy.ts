@@ -39,6 +39,7 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isPainel = path === "/painel" || path.startsWith("/painel/");
   const isLogin = path === "/login" || path.startsWith("/login/");
+  const isRecuperarSenha = path === "/recuperar-senha";
 
   if (!user && isPainel) {
     const url = request.nextUrl.clone();
@@ -47,7 +48,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && isLogin) {
+  if (user && (isLogin || isRecuperarSenha)) {
     const url = request.nextUrl.clone();
     url.pathname = "/painel";
     url.search = "";

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 
 import { logoutAction } from "./_actions/logout";
 import { Button } from "@/components/ui/button";
@@ -15,10 +16,10 @@ export default async function PainelLayout({
     <div className="flex flex-1 flex-col">
       <header className="border-b border-border/70 bg-card/80">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
-          <div className="flex flex-col">
+          <Link href="/painel" className="flex flex-col">
             <p className="text-sm text-muted-foreground">Organização</p>
-            <p className="font-heading text-lg leading-none">Painel da festa</p>
-          </div>
+            <p className="font-heading text-lg leading-none">Painel</p>
+          </Link>
           <form action={logoutAction}>
             <Button type="submit" variant="outline">
               Sair

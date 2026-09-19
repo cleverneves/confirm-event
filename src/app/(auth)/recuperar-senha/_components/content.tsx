@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { loginAction } from "../_actions/login";
+import { recoverPasswordAction } from "../_actions/recover-password";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,36 +21,39 @@ import { Spinner } from "@/components/ui/spinner";
 
 const formSchema = z.object({
   email: z.email("Informe um e-mail válido"),
-  password: z.string().min(1, "Informe a senha"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function LoginContent() {
+export function RecoverPasswordContent() {
+  const searchParams = useSearchParams();
+  const hasInvalidLink = searchParams.get("erro") === "invalido";
   const [formError, setFormError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
 
   async function handleSubmit(values: FormValues) {
     setFormError(null);
-    const result = await loginAction(values);
+    setSuccessMessage(null);
+
+    const result = await recoverPasswordAction(values);
 
     if (!result.success) {
-      if (result.errors) {
-        if (result.errors.email) {
-          form.setError("email", { message: result.errors.email[0] });
-        }
-        if (result.errors.password) {
-          form.setError("password", { message: result.errors.password[0] });
-        }
+      if (result.errors?.email) {
+        form.setError("email", { message: result.errors.email[0] });
       }
-      setFormError(result.message ?? "Não foi possível entrar.");
+      setFormError(result.message ?? "Não foi possível concluir o pedido.");
+      return;
     }
+
+    setSuccessMessage(
+      result.message ?? "Se o e-mail for o da conta, você receberá as instruções."
+    );
   }
 
   const isSubmitting = form.formState.isSubmitting;
@@ -58,18 +62,33 @@ export function LoginContent() {
     <div className="mx-auto flex w-full max-w-md flex-col gap-8">
       <div className="flex flex-col gap-2">
         <p className="font-heading text-sm text-muted-foreground">Organização</p>
-        <h1 className="font-heading text-3xl leading-none">Entrar no painel</h1>
+        <h1 className="font-heading text-3xl leading-none">Recuperar senha</h1>
         <p className="text-muted-foreground">
-          Só quem organiza os eventos acessa a lista, os totais e os nomes.
+          Informe o e-mail da conta. Se for o da organização, as instruções
+          chegam por e-mail.
         </p>
       </div>
 
+      {hasInvalidLink && !successMessage ? (
+        <Alert variant="destructive">
+          <AlertTitle>Link inválido ou vencido</AlertTitle>
+          <AlertDescription>
+            Solicite a recuperação de novo para definir uma senha nova.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       {formError ? (
         <Alert variant="destructive">
-          <AlertTitle>Não foi possível entrar</AlertTitle>
-          <AlertDescription>
-            {formError ?? "Confira os dados e tente de novo."}
-          </AlertDescription>
+          <AlertTitle>Não foi possível concluir</AlertTitle>
+          <AlertDescription>{formError}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {successMessage ? (
+        <Alert>
+          <AlertTitle>Pedido enviado</AlertTitle>
+          <AlertDescription>{successMessage}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -80,10 +99,10 @@ export function LoginContent() {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="login-email">E-mail</FieldLabel>
+                <FieldLabel htmlFor="recover-email">E-mail</FieldLabel>
                 <Input
                   {...field}
-                  id="login-email"
+                  id="recover-email"
                   type="email"
                   autoComplete="email"
                   aria-invalid={fieldState.invalid}
@@ -94,35 +113,16 @@ export function LoginContent() {
               </Field>
             )}
           />
-          <Controller
-            name="password"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="login-password">Senha</FieldLabel>
-                <Input
-                  {...field}
-                  id="login-password"
-                  type="password"
-                  autoComplete="current-password"
-                  aria-invalid={fieldState.invalid}
-                />
-                {fieldState.invalid ? (
-                  <FieldError errors={[fieldState.error]} />
-                ) : null}
-              </Field>
-            )}
-          />
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
-            Entrar
+            Enviar instruções
           </Button>
         </FieldGroup>
       </form>
 
       <p className="text-sm text-muted-foreground">
-        <Link href="/recuperar-senha" className="underline underline-offset-4">
-          Esqueci a senha
+        <Link href="/login" className="underline underline-offset-4">
+          Voltar ao login
         </Link>
       </p>
     </div>

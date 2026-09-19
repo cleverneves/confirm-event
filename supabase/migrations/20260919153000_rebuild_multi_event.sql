@@ -1,4 +1,12 @@
--- Confirm Event: vários eventos, trechos de link e confirmações por nome.
+-- Transição do MVP de festa única (people/party/RPC) para o produto multi-evento.
+-- Idempotente: também funciona se a migration inicial já criou o schema novo.
+
+drop function if exists public.confirm_presence(text, jsonb, jsonb);
+
+drop table if exists public.people cascade;
+drop table if exists public.confirmations cascade;
+drop table if exists public.event_slugs cascade;
+drop table if exists public.events cascade;
 
 create table public.events (
   id bigint generated always as identity primary key,

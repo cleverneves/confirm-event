@@ -16,8 +16,8 @@ const newsreader = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: "Mariana e Victor",
-  description: "Confirme presença na festa de aniversário da Mariana e do Victor.",
+  title: "Confirm Event",
+  description: "Crie eventos e receba confirmação de presença.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

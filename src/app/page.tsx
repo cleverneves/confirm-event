@@ -1,8 +1,11 @@
-import { PublicContent } from "./_components/content";
-import { getEvent } from "./_data-access/get-event";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export default async function HomePage() {
-  const event = await getEvent();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return <PublicContent event={event} />;
+  redirect(user ? "/painel" : "/login");
 }
