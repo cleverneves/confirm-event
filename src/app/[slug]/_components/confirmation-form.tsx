@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,7 +24,44 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function ConfirmationForm({ slug }: { slug: string }) {
+export function ConfirmationSection({
+  slug,
+  acceptsConfirmation,
+}: {
+  slug: string;
+  acceptsConfirmation: boolean;
+}) {
+  const router = useRouter();
+  const [isUnavailable, setIsUnavailable] = useState(!acceptsConfirmation);
+
+  if (isUnavailable) {
+    return <ConfirmationUnavailable />;
+  }
+
+  return (
+    <ConfirmationForm
+      slug={slug}
+      onUnavailable={() => {
+        setIsUnavailable(true);
+        router.refresh();
+      }}
+    />
+  );
+}
+
+function ConfirmationUnavailable() {
+  return (
+    <p className="text-center font-heading text-xl">Confirmação indisponível</p>
+  );
+}
+
+function ConfirmationForm({
+  slug,
+  onUnavailable,
+}: {
+  slug: string;
+  onUnavailable: () => void;
+}) {
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const form = useForm<FormValues>({
@@ -41,6 +79,11 @@ export function ConfirmationForm({ slug }: { slug: string }) {
       slug,
       fullName: values.fullName,
     });
+
+    if (result.unavailable) {
+      onUnavailable();
+      return;
+    }
 
     if (!result.success) {
       if (result.errors?.fullName) {

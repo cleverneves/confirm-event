@@ -4,19 +4,18 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireOrganizer } from "@/lib/auth/require-organizer";
-import { createEventSchema, type EventFields } from "@/lib/event-schema";
+import {
+  confirmationWindowColumns,
+  createEventSchema,
+  type EventFieldErrors,
+  type EventFields,
+} from "@/lib/event-schema";
 import { nextAvailableSlug } from "@/lib/slug";
 
 export type CreateEventResult = {
   success: boolean;
   message?: string;
-  errors?: {
-    title?: string[];
-    details?: string[];
-    eventDate?: string[];
-    eventTime?: string[];
-    location?: string[];
-  };
+  errors?: EventFieldErrors;
 };
 
 export async function createEventAction(
@@ -26,9 +25,12 @@ export async function createEventAction(
   const validation = createEventSchema.safeParse(input);
 
   if (!validation.success) {
+    const errors = validation.error.flatten().fieldErrors as EventFieldErrors;
+
     return {
       success: false,
-      errors: validation.error.flatten().fieldErrors,
+      errors,
+      message: validationErrorMessage(errors),
     };
   }
 
@@ -50,6 +52,7 @@ export async function createEventAction(
   }
 
   const details = validation.data.details.trim() || null;
+  const window = confirmationWindowColumns(validation.data);
 
   const { data: event, error: eventError } = await supabase
     .from("events")
@@ -60,6 +63,8 @@ export async function createEventAction(
       event_time: validation.data.eventTime,
       location: validation.data.location,
       slug,
+      confirmation_starts_on: window.confirmation_starts_on,
+      confirmation_ends_on: window.confirmation_ends_on,
     })
     .select("id")
     .single();
@@ -86,4 +91,12 @@ export async function createEventAction(
 
   revalidatePath("/painel");
   redirect(`/painel/eventos/${event.id}`);
+}
+
+function validationErrorMessage(errors: EventFieldErrors) {
+  if (errors.confirmationStartsOn || errors.confirmationEndsOn) {
+    return "Ajuste a janela de confirmação ou deixe as duas datas vazias.";
+  }
+
+  return "Confira os dados informados.";
 }

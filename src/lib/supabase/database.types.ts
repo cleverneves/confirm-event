@@ -10,6 +10,9 @@ export type Database = {
           event_time: string;
           location: string;
           slug: string;
+          confirmation_starts_on: string | null;
+          confirmation_ends_on: string | null;
+          confirmation_manually_closed: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -21,6 +24,9 @@ export type Database = {
           event_time: string;
           location: string;
           slug: string;
+          confirmation_starts_on?: string | null;
+          confirmation_ends_on?: string | null;
+          confirmation_manually_closed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -32,6 +38,9 @@ export type Database = {
           event_time?: string;
           location?: string;
           slug?: string;
+          confirmation_starts_on?: string | null;
+          confirmation_ends_on?: string | null;
+          confirmation_manually_closed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -91,7 +100,12 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      confirmation_accepts_name: {
+        Args: { p_event_id: number };
+        Returns: boolean;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

@@ -10,6 +10,21 @@ export function isDateBeforeToday(date: string) {
   return DATE_PATTERN.test(date) && date < todayInSaoPaulo();
 }
 
+export function isValidCalendarDate(date: string) {
+  if (!DATE_PATTERN.test(date)) {
+    return false;
+  }
+
+  const [year, month, day] = date.split("-").map(Number);
+  const utc = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    utc.getUTCFullYear() === year &&
+    utc.getUTCMonth() === month - 1 &&
+    utc.getUTCDate() === day
+  );
+}
+
 export function formatEventDate(eventDate: string) {
   const [year, month, day] = eventDate.split("-").map(Number);
   const date = new Date(year, month - 1, day);

@@ -1,4 +1,4 @@
-import { ConfirmationForm } from "./confirmation-form";
+import { ConfirmationSection } from "./confirmation-form";
 import type { PublicEvent } from "../_data-access/get-event-by-slug";
 import { formatEventDate, formatEventTime } from "@/lib/event-date";
 
@@ -38,7 +38,10 @@ export function PublicContent({
         <Detail label="Local" value={event.location} />
       </dl>
 
-      <ConfirmationForm slug={slug} />
+      <ConfirmationSection
+        slug={slug}
+        acceptsConfirmation={event.acceptsConfirmation}
+      />
     </main>
   );
 }

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { CalendarIcon, MapPinIcon } from "lucide-react";
 
+import { ConfirmationControls } from "./confirmation-controls";
 import { EventEditDialog } from "./event-edit-dialog";
 import { EventLink } from "./event-link";
 import type { PainelEvent } from "../_data-access/get-event";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatEventDate, formatEventTime } from "@/lib/event-date";
 
@@ -26,9 +28,18 @@ export function EventHero({ event }: { event: PainelEvent }) {
                 <CalendarIcon />
                 {formatEventDate(event.eventDate)} · {formatEventTime(event.eventTime)}
               </p>
-              <h1 className="font-heading text-3xl leading-tight tracking-tight">
-                {event.title}
-              </h1>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="font-heading text-3xl leading-tight tracking-tight">
+                  {event.title}
+                </h1>
+                <Badge
+                  variant={
+                    event.confirmation.status === "open" ? "default" : "secondary"
+                  }
+                >
+                  {event.confirmation.status === "open" ? "Aberta" : "Encerrada"}
+                </Badge>
+              </div>
               <p className="flex items-center gap-2 text-muted-foreground [&_svg]:size-4">
                 <MapPinIcon />
                 {event.location}
@@ -37,6 +48,12 @@ export function EventHero({ event }: { event: PainelEvent }) {
             <EventEditDialog event={event} />
           </div>
           <EventLink eventId={event.id} slug={event.slug} />
+          <div className="flex flex-col gap-3 border-t border-border pt-6">
+            <p className="text-sm text-muted-foreground">
+              {event.confirmationMessage}
+            </p>
+            <ConfirmationControls event={event} />
+          </div>
         </CardContent>
       </Card>
     </div>

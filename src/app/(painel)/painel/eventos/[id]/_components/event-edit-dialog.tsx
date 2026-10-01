@@ -34,13 +34,15 @@ export function EventEditDialog({ event }: { event: PainelEvent }) {
           </DialogDescription>
         </DialogHeader>
         <EventFieldsForm
-          key={`${event.title}-${event.eventDate}-${event.eventTime}-${event.location}-${event.details ?? ""}`}
+          key={`${event.title}-${event.eventDate}-${event.eventTime}-${event.location}-${event.details ?? ""}-${event.confirmationStartsOn ?? ""}-${event.confirmationEndsOn ?? ""}`}
           defaultValues={{
             title: event.title,
             details: event.details ?? "",
             eventDate: event.eventDate,
             eventTime: formatEventTime(event.eventTime),
             location: event.location,
+            confirmationStartsOn: event.confirmationStartsOn ?? "",
+            confirmationEndsOn: event.confirmationEndsOn ?? "",
           }}
           currentDate={event.eventDate}
           submitLabel="Salvar"

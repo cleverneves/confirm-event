@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MapPinIcon } from "lucide-react";
 
 import type { EventListItem } from "../_data-access/get-events";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -39,9 +40,14 @@ export function EventList({ events }: { events: EventListItem[] }) {
             href={`/painel/eventos/${event.id}`}
             className="flex flex-col gap-3 rounded-lg bg-card p-5 shadow-panel ring-1 ring-muted-foreground/20 transition-shadow hover:shadow-elevated"
           >
-            <p className="font-heading text-xl leading-none tracking-tight">
-              {event.title}
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-heading text-xl leading-none tracking-tight">
+                {event.title}
+              </p>
+              <Badge variant={event.confirmationOpen ? "default" : "secondary"}>
+                {event.confirmationOpen ? "Aberta" : "Encerrada"}
+              </Badge>
+            </div>
             <p className="text-sm text-muted-foreground">
               {formatEventDate(event.eventDate)} · {formatEventTime(event.eventTime)}
             </p>

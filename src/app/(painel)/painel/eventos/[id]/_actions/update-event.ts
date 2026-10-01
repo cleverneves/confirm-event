@@ -4,18 +4,17 @@ import { revalidatePath } from "next/cache";
 
 import { requireOrganizer } from "@/lib/auth/require-organizer";
 import { isDateBeforeToday } from "@/lib/event-date";
-import { eventFieldsSchema, type EventFields } from "@/lib/event-schema";
+import {
+  confirmationWindowColumns,
+  eventFieldsSchema,
+  type EventFieldErrors,
+  type EventFields,
+} from "@/lib/event-schema";
 
 export type UpdateEventResult = {
   success: boolean;
   message?: string;
-  errors?: {
-    title?: string[];
-    details?: string[];
-    eventDate?: string[];
-    eventTime?: string[];
-    location?: string[];
-  };
+  errors?: EventFieldErrors;
 };
 
 export async function updateEventAction(
@@ -26,9 +25,15 @@ export async function updateEventAction(
   const validation = eventFieldsSchema.safeParse(input);
 
   if (!validation.success) {
+    const errors = validation.error.flatten().fieldErrors as EventFieldErrors;
+
     return {
       success: false,
-      errors: validation.error.flatten().fieldErrors,
+      errors,
+      message:
+        errors.confirmationStartsOn || errors.confirmationEndsOn
+          ? "Ajuste a janela de confirmação ou deixe as duas datas vazias."
+          : "Confira os dados informados.",
     };
   }
 
@@ -57,6 +62,8 @@ export async function updateEventAction(
     };
   }
 
+  const window = confirmationWindowColumns(validation.data);
+
   const { error } = await supabase
     .from("events")
     .update({
@@ -65,6 +72,8 @@ export async function updateEventAction(
       event_date: validation.data.eventDate,
       event_time: validation.data.eventTime,
       location: validation.data.location,
+      confirmation_starts_on: window.confirmation_starts_on,
+      confirmation_ends_on: window.confirmation_ends_on,
       updated_at: new Date().toISOString(),
     })
     .eq("id", eventId);

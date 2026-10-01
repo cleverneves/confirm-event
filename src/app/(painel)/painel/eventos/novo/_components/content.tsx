@@ -25,8 +25,8 @@ export function CreateEventContent() {
         <CardHeader>
           <CardTitle>Novo evento</CardTitle>
           <CardDescription>
-            Título, data, horário e local são obrigatórios. Os detalhes são
-            opcionais.
+            Título, data, horário e local são obrigatórios. Os detalhes e a
+            janela de confirmação são opcionais.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -37,6 +37,8 @@ export function CreateEventContent() {
               eventDate: "",
               eventTime: "",
               location: "",
+              confirmationStartsOn: "",
+              confirmationEndsOn: "",
             }}
             submitLabel="Criar evento"
             onSubmit={createEventAction}

@@ -1,6 +1,6 @@
 # Arquitetura
 
-Last updated: 2026-09-19
+Last updated: 2026-10-01
 
 Comportamento do produto: [Visão do produto](project-overview.md).
 
@@ -65,9 +65,9 @@ Variáveis: `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` (fallba
 
 ## Schema
 
-Migrations em `supabase/migrations/`. A mais recente (`20260919153000_rebuild_multi_event.sql`) recria o schema atual.
+Migrations em `supabase/migrations/`. A mais recente (`20261001160000_confirmation_window.sql`) acrescenta a janela de confirmação.
 
-**`events`:** `id`, `title`, `details` (nullable), `event_date`, `event_time`, `location`, `slug` (atual), timestamps. Título e local não podem ser só espaços. Slug: `^[a-z0-9]+(?:-[a-z0-9]+)*$`.
+**`events`:** `id`, `title`, `details` (nullable), `event_date`, `event_time`, `location`, `slug` (atual), `confirmation_starts_on` / `confirmation_ends_on` (as duas nulas ou as duas preenchidas; início anterior ao fim; ambas anteriores a `event_date`), `confirmation_manually_closed` (default false), timestamps. Título e local não podem ser só espaços. Slug: `^[a-z0-9]+(?:-[a-z0-9]+)*$`. O estado aberto/encerrado não é coluna: é calculado em São Paulo a partir da data do evento, da janela e do marcador manual.
 
 **`event_slugs`:** histórico de trechos (`slug` PK → `event_id`). Exclusão do evento faz cascade. A página pública resolve o slug aqui; se `events.slug` for outro, redireciona.
 
@@ -76,7 +76,7 @@ Migrations em `supabase/migrations/`. A mais recente (`20260919153000_rebuild_mu
 ### RLS (resumo)
 
 - `events` / `event_slugs`: `SELECT` para `anon` e `authenticated`; insert/update/delete só `authenticated`.
-- `confirmations`: `INSERT` para `anon` e `authenticated`; `SELECT`/`UPDATE`/`DELETE` só `authenticated`.
+- `confirmations`: `INSERT` para `anon` e `authenticated` somente se `confirmation_accepts_name(event_id)` for verdadeiro (sem encerramento manual e hoje, em São Paulo, dentro do período); `SELECT`/`UPDATE`/`DELETE` só `authenticated`.
 
 Convidado não lista nomes. Organizador autenticado lista, edita e remove.
 
@@ -86,7 +86,8 @@ Convidado não lista nomes. Organizador autenticado lista, edita e remove.
 - Edição: recusa data nova no passado; manter a data já vencida é permitido.
 - Slug na criação: `nextAvailableSlug` a partir do título (`evento`, `evento-2`, …).
 - Alterar slug: recusa trecho usado por **outro** evento; reusar trecho do mesmo evento volta a ser o atual; o histórico antigo permanece para redirect.
-- Confirmação pública: valida o slug, grava `full_name`, revalida a página do evento e o painel daquele id.
+- Confirmação pública: valida o slug, recusa nome novo se a confirmação estiver encerrada (calendário ou manual), grava `full_name` só quando aberta, revalida a página do evento e o painel daquele id.
+- Janela opcional e encerramento: o organizador informa início e fim juntos, ou nenhum; pode encerrar na hora (com confirmação explícita) e reativar. Reativar só abre de novo se o calendário ainda permitir.
 
 ## Dependências externas
 
