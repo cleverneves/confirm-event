@@ -13,6 +13,9 @@ export type Database = {
           confirmation_starts_on: string | null;
           confirmation_ends_on: string | null;
           confirmation_manually_closed: boolean;
+          background_color: string | null;
+          title_color: string | null;
+          button_color: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -27,6 +30,9 @@ export type Database = {
           confirmation_starts_on?: string | null;
           confirmation_ends_on?: string | null;
           confirmation_manually_closed?: boolean;
+          background_color?: string | null;
+          title_color?: string | null;
+          button_color?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -41,6 +47,9 @@ export type Database = {
           confirmation_starts_on?: string | null;
           confirmation_ends_on?: string | null;
           confirmation_manually_closed?: boolean;
+          background_color?: string | null;
+          title_color?: string | null;
+          button_color?: string | null;
           created_at?: string;
           updated_at?: string;
         };

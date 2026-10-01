@@ -1,4 +1,5 @@
 import { resolveEventConfirmation } from "@/lib/confirmation-window";
+import { parseStoredColor } from "@/lib/event-theme";
 import { createClient } from "@/lib/supabase/server";
 
 export type PublicEvent = {
@@ -10,6 +11,9 @@ export type PublicEvent = {
   location: string;
   currentSlug: string;
   acceptsConfirmation: boolean;
+  backgroundColor: string | null;
+  titleColor: string | null;
+  buttonColor: string | null;
 };
 
 export async function getPublicEvent(slug: string) {
@@ -17,7 +21,7 @@ export async function getPublicEvent(slug: string) {
   const { data, error } = await supabase
     .from("event_slugs")
     .select(
-      "slug, events(id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed)"
+      "slug, events(id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color, title_color, button_color)"
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -48,5 +52,8 @@ export async function getPublicEvent(slug: string) {
     location: event.location,
     currentSlug: event.slug,
     acceptsConfirmation: confirmation.status === "open",
+    backgroundColor: parseStoredColor(event.background_color),
+    titleColor: parseStoredColor(event.title_color),
+    buttonColor: parseStoredColor(event.button_color),
   } satisfies PublicEvent;
 }

@@ -4,6 +4,7 @@ import { CalendarIcon, MapPinIcon } from "lucide-react";
 import { ConfirmationControls } from "./confirmation-controls";
 import { EventEditDialog } from "./event-edit-dialog";
 import { EventLink } from "./event-link";
+import { EventThemeDialog } from "./event-theme-dialog";
 import type { PainelEvent } from "../_data-access/get-event";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,7 +46,10 @@ export function EventHero({ event }: { event: PainelEvent }) {
                 {event.location}
               </p>
             </div>
-            <EventEditDialog event={event} />
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <EventEditDialog event={event} />
+              <EventThemeDialog event={event} />
+            </div>
           </div>
           <EventLink eventId={event.id} slug={event.slug} />
           <div className="flex flex-col gap-3 border-t border-border pt-6">

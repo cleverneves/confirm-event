@@ -1,15 +1,7 @@
 import { ConfirmationSection } from "./confirmation-form";
+import { PublicEventView } from "./public-event-view";
 import type { PublicEvent } from "../_data-access/get-event-by-slug";
-import { formatEventDate, formatEventTime } from "@/lib/event-date";
-
-function Detail({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="font-heading text-lg">{value}</dd>
-    </div>
-  );
-}
+import { resolveEventTheme } from "@/lib/event-theme";
 
 export function PublicContent({
   event,
@@ -18,31 +10,29 @@ export function PublicContent({
   event: PublicEvent;
   slug: string;
 }) {
-  const details = event.details?.trim();
+  const theme = resolveEventTheme({
+    backgroundColor: event.backgroundColor,
+    titleColor: event.titleColor,
+    buttonColor: event.buttonColor,
+  });
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-12 px-6 py-16">
-      <header className="flex flex-col gap-4 text-center">
-        <p className="text-sm text-muted-foreground">Confirmação de presença</p>
-        <h1 className="font-heading text-5xl leading-none tracking-tight sm:text-6xl">
-          {event.title}
-        </h1>
-        {details ? (
-          <p className="mx-auto max-w-sm text-muted-foreground">{details}</p>
-        ) : null}
-      </header>
-
-      <dl className="grid gap-4 border-y border-border py-6 sm:grid-cols-3">
-        <Detail label="Data" value={formatEventDate(event.eventDate)} />
-        <Detail label="Horário" value={formatEventTime(event.eventTime)} />
-        <Detail label="Local" value={event.location} />
-      </dl>
-
+    <PublicEventView
+      title={event.title}
+      details={event.details}
+      eventDate={event.eventDate}
+      eventTime={event.eventTime}
+      location={event.location}
+      titleColor={theme.titleColor}
+      backgroundColor={theme.backgroundColor}
+    >
       <ConfirmationSection
         slug={slug}
         acceptsConfirmation={event.acceptsConfirmation}
+        buttonColor={theme.buttonColor}
+        buttonTextColor={theme.buttonTextColor}
       />
-    </main>
+    </PublicEventView>
   );
 }
 

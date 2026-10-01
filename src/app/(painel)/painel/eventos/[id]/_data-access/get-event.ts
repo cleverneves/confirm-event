@@ -3,6 +3,7 @@ import {
   type ConfirmationResolution,
 } from "@/lib/confirmation-window";
 import { requireOrganizer } from "@/lib/auth/require-organizer";
+import { parseStoredColor } from "@/lib/event-theme";
 
 export type PainelEvent = {
   id: number;
@@ -17,6 +18,9 @@ export type PainelEvent = {
   confirmationManuallyClosed: boolean;
   confirmation: ConfirmationResolution;
   confirmationMessage: string;
+  backgroundColor: string | null;
+  titleColor: string | null;
+  buttonColor: string | null;
 };
 
 export function parseEventId(value: string) {
@@ -39,7 +43,7 @@ export async function getPainelEvent(eventId: number) {
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed"
+      "id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color, title_color, button_color"
     )
     .eq("id", eventId)
     .maybeSingle();
@@ -68,5 +72,8 @@ export async function getPainelEvent(eventId: number) {
     confirmationManuallyClosed: data.confirmation_manually_closed,
     confirmation: resolved.confirmation,
     confirmationMessage: resolved.confirmationMessage,
+    backgroundColor: parseStoredColor(data.background_color),
+    titleColor: parseStoredColor(data.title_color),
+    buttonColor: parseStoredColor(data.button_color),
   } satisfies PainelEvent;
 }

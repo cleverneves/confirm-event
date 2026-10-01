@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { buttonThemeStyle } from "@/lib/event-theme";
 
 const formSchema = z.object({
   fullName: z.string().trim().min(1, "Informe o nome completo"),
@@ -27,9 +28,13 @@ type FormValues = z.infer<typeof formSchema>;
 export function ConfirmationSection({
   slug,
   acceptsConfirmation,
+  buttonColor,
+  buttonTextColor,
 }: {
   slug: string;
   acceptsConfirmation: boolean;
+  buttonColor: string | null;
+  buttonTextColor: string;
 }) {
   const router = useRouter();
   const [isUnavailable, setIsUnavailable] = useState(!acceptsConfirmation);
@@ -41,6 +46,8 @@ export function ConfirmationSection({
   return (
     <ConfirmationForm
       slug={slug}
+      buttonColor={buttonColor}
+      buttonTextColor={buttonTextColor}
       onUnavailable={() => {
         setIsUnavailable(true);
         router.refresh();
@@ -57,9 +64,13 @@ function ConfirmationUnavailable() {
 
 function ConfirmationForm({
   slug,
+  buttonColor,
+  buttonTextColor,
   onUnavailable,
 }: {
   slug: string;
+  buttonColor: string | null;
+  buttonTextColor: string;
   onUnavailable: () => void;
 }) {
   const [formError, setFormError] = useState<string | null>(null);
@@ -136,7 +147,11 @@ function ConfirmationForm({
             </Field>
           )}
         />
-        <Button type="submit" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          style={buttonThemeStyle(buttonColor, buttonTextColor)}
+        >
           {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
           Eu vou!
         </Button>

@@ -65,9 +65,9 @@ Variáveis: `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` (fallba
 
 ## Schema
 
-Migrations em `supabase/migrations/`. A mais recente (`20261001160000_confirmation_window.sql`) acrescenta a janela de confirmação.
+Migrations em `supabase/migrations/`. A mais recente (`20261001180000_event_theme.sql`) acrescenta o tema visual da página pública.
 
-**`events`:** `id`, `title`, `details` (nullable), `event_date`, `event_time`, `location`, `slug` (atual), `confirmation_starts_on` / `confirmation_ends_on` (as duas nulas ou as duas preenchidas; início anterior ao fim; ambas anteriores a `event_date`), `confirmation_manually_closed` (default false), timestamps. Título e local não podem ser só espaços. Slug: `^[a-z0-9]+(?:-[a-z0-9]+)*$`. O estado aberto/encerrado não é coluna: é calculado em São Paulo a partir da data do evento, da janela e do marcador manual.
+**`events`:** `id`, `title`, `details` (nullable), `event_date`, `event_time`, `location`, `slug` (atual), `confirmation_starts_on` / `confirmation_ends_on` (as duas nulas ou as duas preenchidas; início anterior ao fim; ambas anteriores a `event_date`), `confirmation_manually_closed` (default false), `background_color` / `title_color` / `button_color` (nullable, hex `#rrggbb`; null = tema padrão da página pública naquela posição), timestamps. Título e local não podem ser só espaços. Slug: `^[a-z0-9]+(?:-[a-z0-9]+)*$`. O estado aberto/encerrado não é coluna: é calculado em São Paulo a partir da data do evento, da janela e do marcador manual.
 
 **`event_slugs`:** histórico de trechos (`slug` PK → `event_id`). Exclusão do evento faz cascade. A página pública resolve o slug aqui; se `events.slug` for outro, redireciona.
 
@@ -88,6 +88,7 @@ Convidado não lista nomes. Organizador autenticado lista, edita e remove.
 - Alterar slug: recusa trecho usado por **outro** evento; reusar trecho do mesmo evento volta a ser o atual; o histórico antigo permanece para redirect.
 - Confirmação pública: valida o slug, recusa nome novo se a confirmação estiver encerrada (calendário ou manual), grava `full_name` só quando aberta, revalida a página do evento e o painel daquele id.
 - Janela opcional e encerramento: o organizador informa início e fim juntos, ou nenhum; pode encerrar na hora (com confirmação explícita) e reativar. Reativar só abre de novo se o calendário ainda permitir.
+- Tema da página pública: três cores opcionais por evento. Ausência ou hex inválido na leitura cai no visual atual (fundo `#f3f5f7`, textos `#0d1b2a`, botão `#0d1b2a` com texto claro). Só o organizador grava. O texto de **“Eu vou!”** é claro ou escuro conforme o contraste; empate fica claro.
 
 ## Dependências externas
 
