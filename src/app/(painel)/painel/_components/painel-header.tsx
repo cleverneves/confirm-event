@@ -12,18 +12,20 @@ export function PainelHeader({ email }: { email: string }) {
   const pathname = usePathname();
   const isMeusEventos =
     pathname === "/painel" || /^\/painel\/eventos\/\d+/.test(pathname);
+  const isMeuPerfil =
+    pathname === "/painel/perfil" || pathname.startsWith("/painel/perfil/");
 
   return (
     <header className="sticky top-0 border-b border-border bg-card/80 backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-[1360px] items-center justify-between gap-4 px-4 py-3 md:px-6">
-        <div className="flex min-w-0 items-center gap-6">
+      <div className="mx-auto flex w-full max-w-[1360px] flex-wrap items-center justify-between gap-4 px-4 py-3 md:px-6">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-6">
           <Link href="/painel" className="flex shrink-0 items-center gap-2">
             <span className="size-2 rounded-full bg-primary" />
             <span className="font-heading text-base font-semibold tracking-tight">
               Confirm Event
             </span>
           </Link>
-          <nav className="hidden items-center gap-1 sm:flex">
+          <nav className="flex items-center gap-1">
             <Link
               href="/painel"
               className={cn(
@@ -32,6 +34,15 @@ export function PainelHeader({ email }: { email: string }) {
               )}
             >
               Meus Eventos
+            </Link>
+            <Link
+              href="/painel/perfil"
+              className={cn(
+                "rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+                isMeuPerfil && "text-foreground"
+              )}
+            >
+              Meu perfil
             </Link>
           </nav>
         </div>

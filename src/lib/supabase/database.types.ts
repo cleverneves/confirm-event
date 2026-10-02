@@ -113,6 +113,33 @@ export type Database = {
           },
         ];
       };
+      organizer_profiles: {
+        Row: {
+          user_id: string;
+          first_name: string;
+          last_name: string;
+          phone: string | null;
+          company: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          first_name: string;
+          last_name: string;
+          phone?: string | null;
+          company?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          first_name?: string;
+          last_name?: string;
+          phone?: string | null;
+          company?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
