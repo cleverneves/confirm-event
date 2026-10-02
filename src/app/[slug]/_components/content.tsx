@@ -25,12 +25,14 @@ export function PublicContent({
       location={event.location}
       titleColor={theme.titleColor}
       backgroundColor={theme.backgroundColor}
+      imageUrl={event.imageUrl}
     >
       <ConfirmationSection
         slug={slug}
         acceptsConfirmation={event.acceptsConfirmation}
         buttonColor={theme.buttonColor}
         buttonTextColor={theme.buttonTextColor}
+        titleColor={theme.titleColor}
       />
     </PublicEventView>
   );

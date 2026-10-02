@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { buttonThemeStyle } from "@/lib/event-theme";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   fullName: z.string().trim().min(1, "Informe o nome completo"),
@@ -30,11 +31,13 @@ export function ConfirmationSection({
   acceptsConfirmation,
   buttonColor,
   buttonTextColor,
+  titleColor,
 }: {
   slug: string;
   acceptsConfirmation: boolean;
   buttonColor: string | null;
   buttonTextColor: string;
+  titleColor: string | null;
 }) {
   const router = useRouter();
   const [isUnavailable, setIsUnavailable] = useState(!acceptsConfirmation);
@@ -48,6 +51,7 @@ export function ConfirmationSection({
       slug={slug}
       buttonColor={buttonColor}
       buttonTextColor={buttonTextColor}
+      titleColor={titleColor}
       onUnavailable={() => {
         setIsUnavailable(true);
         router.refresh();
@@ -66,11 +70,13 @@ function ConfirmationForm({
   slug,
   buttonColor,
   buttonTextColor,
+  titleColor,
   onUnavailable,
 }: {
   slug: string;
   buttonColor: string | null;
   buttonTextColor: string;
+  titleColor: string | null;
   onUnavailable: () => void;
 }) {
   const [formError, setFormError] = useState<string | null>(null);
@@ -129,6 +135,12 @@ function ConfirmationForm({
       ) : null}
 
       <FieldGroup>
+        <p
+          className={cn("text-sm", titleColor ? undefined : "text-muted-foreground")}
+          style={titleColor ? { color: titleColor } : undefined}
+        >
+          Confirmação de presença
+        </p>
         <Controller
           name="fullName"
           control={form.control}

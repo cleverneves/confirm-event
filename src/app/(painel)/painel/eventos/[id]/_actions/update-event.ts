@@ -5,10 +5,14 @@ import { revalidatePath } from "next/cache";
 import { requireOrganizer } from "@/lib/auth/require-organizer";
 import { isDateBeforeToday } from "@/lib/event-date";
 import {
+  illustrationColumns,
+  readIllustrationFromFormData,
+} from "@/lib/event-illustration-server";
+import {
   confirmationWindowColumns,
+  eventFieldsFromFormData,
   eventFieldsSchema,
   type EventFieldErrors,
-  type EventFields,
 } from "@/lib/event-schema";
 
 export type UpdateEventResult = {
@@ -19,10 +23,10 @@ export type UpdateEventResult = {
 
 export async function updateEventAction(
   eventId: number,
-  input: EventFields
+  formData: FormData
 ): Promise<UpdateEventResult> {
   const { supabase } = await requireOrganizer();
-  const validation = eventFieldsSchema.safeParse(input);
+  const validation = eventFieldsSchema.safeParse(eventFieldsFromFormData(formData));
 
   if (!validation.success) {
     const errors = validation.error.flatten().fieldErrors as EventFieldErrors;
@@ -34,6 +38,16 @@ export async function updateEventAction(
         errors.confirmationStartsOn || errors.confirmationEndsOn
           ? "Ajuste a janela de confirmação ou deixe as duas datas vazias."
           : "Confira os dados informados.",
+    };
+  }
+
+  const illustration = await readIllustrationFromFormData(formData);
+
+  if (illustration.kind === "invalid") {
+    return {
+      success: false,
+      errors: { illustration: [illustration.message] },
+      message: illustration.message,
     };
   }
 
@@ -75,6 +89,7 @@ export async function updateEventAction(
       confirmation_starts_on: window.confirmation_starts_on,
       confirmation_ends_on: window.confirmation_ends_on,
       updated_at: new Date().toISOString(),
+      ...illustrationColumns(illustration),
     })
     .eq("id", eventId);
 
@@ -88,6 +103,7 @@ export async function updateEventAction(
   revalidatePath("/painel");
   revalidatePath(`/painel/eventos/${eventId}`);
   revalidatePath(`/${current.slug}`);
+  revalidatePath(`/${current.slug}/imagem`);
 
   return {
     success: true,

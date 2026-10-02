@@ -25,8 +25,8 @@ export function CreateEventContent() {
         <CardHeader>
           <CardTitle>Novo evento</CardTitle>
           <CardDescription>
-            Título, data, horário e local são obrigatórios. Os detalhes e a
-            janela de confirmação são opcionais.
+            Título, data, horário e local são obrigatórios. Os detalhes, a
+            imagem e a janela de confirmação são opcionais.
           </CardDescription>
         </CardHeader>
         <CardContent>

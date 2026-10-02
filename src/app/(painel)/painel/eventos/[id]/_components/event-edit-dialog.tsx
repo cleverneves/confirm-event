@@ -7,6 +7,7 @@ import { updateEventAction } from "../_actions/update-event";
 import { EventFieldsForm } from "../../../_components/event-fields-form";
 import type { PainelEvent } from "../_data-access/get-event";
 import { Button } from "@/components/ui/button";
+import { eventIllustrationUrl } from "@/lib/event-illustration";
 import {
   Dialog,
   DialogContent,
@@ -34,7 +35,7 @@ export function EventEditDialog({ event }: { event: PainelEvent }) {
           </DialogDescription>
         </DialogHeader>
         <EventFieldsForm
-          key={`${event.title}-${event.eventDate}-${event.eventTime}-${event.location}-${event.details ?? ""}-${event.confirmationStartsOn ?? ""}-${event.confirmationEndsOn ?? ""}`}
+          key={`${event.title}-${event.eventDate}-${event.eventTime}-${event.location}-${event.details ?? ""}-${event.confirmationStartsOn ?? ""}-${event.confirmationEndsOn ?? ""}-${event.hasIllustration}-${event.updatedAt}`}
           defaultValues={{
             title: event.title,
             details: event.details ?? "",
@@ -46,7 +47,12 @@ export function EventEditDialog({ event }: { event: PainelEvent }) {
           }}
           currentDate={event.eventDate}
           submitLabel="Salvar"
-          onSubmit={(values) => updateEventAction(event.id, values)}
+          savedImageUrl={
+            event.hasIllustration
+              ? eventIllustrationUrl(event.slug, event.updatedAt)
+              : null
+          }
+          onSubmit={(formData) => updateEventAction(event.id, formData)}
           onSuccess={() => setOpen(false)}
         />
       </DialogContent>

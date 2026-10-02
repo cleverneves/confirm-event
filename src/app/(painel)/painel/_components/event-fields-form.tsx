@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
+import { EventIllustration } from "@/components/event-illustration";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -20,6 +22,13 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  hasFourToOneAspect,
+  ILLUSTRATION_ASPECT_WARNING,
+  ILLUSTRATION_FIELD_HELP,
+  ILLUSTRATION_INVALID_TYPE_MESSAGE,
+  validateIllustrationFile,
+} from "@/lib/event-illustration";
+import {
   makeEventFieldsSchema,
   type EventFieldErrors,
   type EventFields,
@@ -31,17 +40,36 @@ type SubmitResult = {
   errors?: EventFieldErrors;
 };
 
+function readImageSize(file: File) {
+  return new Promise<{ width: number; height: number } | null>((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve({ width: image.naturalWidth, height: image.naturalHeight });
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(null);
+    };
+    image.src = objectUrl;
+  });
+}
+
 export function EventFieldsForm({
   defaultValues,
   currentDate,
   submitLabel,
+  savedImageUrl,
   onSubmit,
   onSuccess,
 }: {
   defaultValues: EventFields;
   currentDate?: string;
   submitLabel: string;
-  onSubmit: (values: EventFields) => Promise<SubmitResult>;
+  savedImageUrl?: string | null;
+  onSubmit: (formData: FormData) => Promise<SubmitResult>;
   onSuccess?: () => void;
 }) {
   const schema = useMemo(
@@ -49,13 +77,107 @@ export function EventFieldsForm({
     [currentDate]
   );
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [shouldRemoveIllustration, setShouldRemoveIllustration] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [hasAspectWarning, setHasAspectWarning] = useState(false);
   const form = useForm<EventFields>({
     resolver: zodResolver(schema),
     defaultValues,
   });
 
+  useEffect(() => {
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [objectUrl]);
+
+  const previewUrl = objectUrl ?? (shouldRemoveIllustration ? null : savedImageUrl ?? null);
+  const previewAlt = form.watch("title").trim() || "Prévia da imagem do evento";
+
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const selectionError = validateIllustrationFile(file);
+
+    if (selectionError) {
+      setFileError(selectionError);
+      setSelectedFile(null);
+      setHasAspectWarning(false);
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+      setObjectUrl(null);
+      event.target.value = "";
+      return;
+    }
+
+    const size = await readImageSize(file);
+
+    if (!size) {
+      setFileError(ILLUSTRATION_INVALID_TYPE_MESSAGE);
+      setSelectedFile(null);
+      setHasAspectWarning(false);
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+      setObjectUrl(null);
+      event.target.value = "";
+      return;
+    }
+
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+    }
+
+    setFileError(null);
+    setSelectedFile(file);
+    setShouldRemoveIllustration(false);
+    setHasAspectWarning(!hasFourToOneAspect(size.width, size.height));
+    setObjectUrl(URL.createObjectURL(file));
+  }
+
+  function handleRemoveIllustration() {
+    setSelectedFile(null);
+    setFileError(null);
+    setHasAspectWarning(false);
+    setShouldRemoveIllustration(true);
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+    }
+    setObjectUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
   async function handleSubmit(values: EventFields) {
-    const result = await onSubmit(values);
+    const formData = new FormData();
+    formData.set("title", values.title);
+    formData.set("details", values.details);
+    formData.set("eventDate", values.eventDate);
+    formData.set("eventTime", values.eventTime);
+    formData.set("location", values.location);
+    formData.set("confirmationStartsOn", values.confirmationStartsOn);
+    formData.set("confirmationEndsOn", values.confirmationEndsOn);
+
+    if (selectedFile) {
+      formData.set("illustration", selectedFile);
+    }
+
+    if (shouldRemoveIllustration) {
+      formData.set("removeIllustration", "true");
+    }
+
+    const result = await onSubmit(formData);
 
     if (!result.success) {
       if (result.errors?.title) {
@@ -82,6 +204,9 @@ export function EventFieldsForm({
         form.setError("confirmationEndsOn", {
           message: result.errors.confirmationEndsOn[0],
         });
+      }
+      if (result.errors?.illustration) {
+        setFileError(result.errors.illustration[0]);
       }
       toast.error(result.message ?? "Não foi possível salvar. Tente de novo.");
       return;
@@ -186,6 +311,32 @@ export function EventFieldsForm({
             </Field>
           )}
         />
+        <Field data-invalid={Boolean(fileError)}>
+          <FieldLabel htmlFor="event-illustration">Imagem (opcional)</FieldLabel>
+          <FieldDescription>{ILLUSTRATION_FIELD_HELP}</FieldDescription>
+          {previewUrl ? (
+            <EventIllustration src={previewUrl} alt={previewAlt} />
+          ) : null}
+          {hasAspectWarning ? (
+            <Alert>
+              <AlertDescription>{ILLUSTRATION_ASPECT_WARNING}</AlertDescription>
+            </Alert>
+          ) : null}
+          <Input
+            ref={fileInputRef}
+            id="event-illustration"
+            type="file"
+            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+            aria-invalid={Boolean(fileError)}
+            onChange={(event) => void handleFileChange(event)}
+          />
+          {fileError ? <FieldError errors={[{ message: fileError }]} /> : null}
+          {previewUrl ? (
+            <Button type="button" variant="outline" onClick={handleRemoveIllustration}>
+              Remover imagem
+            </Button>
+          ) : null}
+        </Field>
         <FieldSet>
           <FieldLegend>Janela de confirmação (opcional)</FieldLegend>
           <FieldDescription>

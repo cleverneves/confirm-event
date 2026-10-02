@@ -5,10 +5,14 @@ import { redirect } from "next/navigation";
 
 import { requireOrganizer } from "@/lib/auth/require-organizer";
 import {
+  illustrationColumns,
+  readIllustrationFromFormData,
+} from "@/lib/event-illustration-server";
+import {
   confirmationWindowColumns,
   createEventSchema,
+  eventFieldsFromFormData,
   type EventFieldErrors,
-  type EventFields,
 } from "@/lib/event-schema";
 import { nextAvailableSlug } from "@/lib/slug";
 
@@ -19,10 +23,10 @@ export type CreateEventResult = {
 };
 
 export async function createEventAction(
-  input: EventFields
+  formData: FormData
 ): Promise<CreateEventResult> {
   const { supabase } = await requireOrganizer();
-  const validation = createEventSchema.safeParse(input);
+  const validation = createEventSchema.safeParse(eventFieldsFromFormData(formData));
 
   if (!validation.success) {
     const errors = validation.error.flatten().fieldErrors as EventFieldErrors;
@@ -31,6 +35,16 @@ export async function createEventAction(
       success: false,
       errors,
       message: validationErrorMessage(errors),
+    };
+  }
+
+  const illustration = await readIllustrationFromFormData(formData);
+
+  if (illustration.kind === "invalid") {
+    return {
+      success: false,
+      errors: { illustration: [illustration.message] },
+      message: illustration.message,
     };
   }
 
@@ -65,6 +79,7 @@ export async function createEventAction(
       slug,
       confirmation_starts_on: window.confirmation_starts_on,
       confirmation_ends_on: window.confirmation_ends_on,
+      ...illustrationColumns(illustration),
     })
     .select("id")
     .single();

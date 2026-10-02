@@ -60,7 +60,20 @@ export type EventFieldErrors = {
   location?: string[];
   confirmationStartsOn?: string[];
   confirmationEndsOn?: string[];
+  illustration?: string[];
 };
+
+export function eventFieldsFromFormData(formData: FormData): EventFields {
+  return {
+    title: String(formData.get("title") ?? ""),
+    details: String(formData.get("details") ?? ""),
+    eventDate: String(formData.get("eventDate") ?? ""),
+    eventTime: String(formData.get("eventTime") ?? ""),
+    location: String(formData.get("location") ?? ""),
+    confirmationStartsOn: String(formData.get("confirmationStartsOn") ?? ""),
+    confirmationEndsOn: String(formData.get("confirmationEndsOn") ?? ""),
+  };
+}
 
 export function confirmationWindowColumns(data: EventFields) {
   const startsOn = data.confirmationStartsOn.trim();

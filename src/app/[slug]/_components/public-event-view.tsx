@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { EventIllustration } from "@/components/event-illustration";
 import { cn } from "@/lib/utils";
 import { formatEventDate, formatEventTime } from "@/lib/event-date";
 
@@ -38,6 +39,7 @@ export function PublicEventView({
   location,
   titleColor,
   backgroundColor,
+  imageUrl,
   variant = "page",
   children,
 }: {
@@ -48,6 +50,7 @@ export function PublicEventView({
   location: string;
   titleColor: string | null;
   backgroundColor?: string | null;
+  imageUrl?: string | null;
   variant?: "page" | "preview";
   children: ReactNode;
 }) {
@@ -71,10 +74,9 @@ export function PublicEventView({
           isPreview ? "gap-8 px-4 py-8" : "gap-12 px-6 py-16"
         )}
       >
+        {imageUrl ? <EventIllustration src={imageUrl} alt={title} /> : null}
+
         <header className="flex flex-col gap-4 text-center">
-          <p className={cn("text-sm", mutedClass)} style={titleStyle}>
-            Confirmação de presença
-          </p>
           <h1
             className={cn(
               "font-heading leading-none tracking-tight",

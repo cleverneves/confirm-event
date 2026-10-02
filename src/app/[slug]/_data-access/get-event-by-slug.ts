@@ -1,4 +1,5 @@
 import { resolveEventConfirmation } from "@/lib/confirmation-window";
+import { eventIllustrationUrl } from "@/lib/event-illustration";
 import { parseStoredColor } from "@/lib/event-theme";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,6 +15,7 @@ export type PublicEvent = {
   backgroundColor: string | null;
   titleColor: string | null;
   buttonColor: string | null;
+  imageUrl: string | null;
 };
 
 export async function getPublicEvent(slug: string) {
@@ -21,7 +23,7 @@ export async function getPublicEvent(slug: string) {
   const { data, error } = await supabase
     .from("event_slugs")
     .select(
-      "slug, events(id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color, title_color, button_color)"
+      "slug, events(id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color, title_color, button_color, illustration_content_type, updated_at)"
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -55,5 +57,8 @@ export async function getPublicEvent(slug: string) {
     backgroundColor: parseStoredColor(event.background_color),
     titleColor: parseStoredColor(event.title_color),
     buttonColor: parseStoredColor(event.button_color),
+    imageUrl: event.illustration_content_type
+      ? eventIllustrationUrl(event.slug, event.updated_at)
+      : null,
   } satisfies PublicEvent;
 }

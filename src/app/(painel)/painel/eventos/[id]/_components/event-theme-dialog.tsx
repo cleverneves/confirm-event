@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { eventIllustrationUrl } from "@/lib/event-illustration";
 import {
   buttonTextColor,
   buttonThemeStyle,
@@ -41,6 +42,7 @@ import {
   toThemeFormValues,
   type EventThemeFields,
 } from "@/lib/event-theme";
+import { cn } from "@/lib/utils";
 
 export function EventThemeDialog({ event }: { event: PainelEvent }) {
   const [open, setOpen] = useState(false);
@@ -209,8 +211,22 @@ function EventThemeForm({
           location={event.location}
           titleColor={titleColor || null}
           backgroundColor={effectiveBackground}
+          imageUrl={
+            event.hasIllustration
+              ? eventIllustrationUrl(event.slug, event.updatedAt)
+              : null
+          }
         >
           <FieldGroup>
+            <p
+              className={cn(
+                "text-sm",
+                titleColor ? undefined : "text-muted-foreground"
+              )}
+              style={titleColor ? { color: titleColor } : undefined}
+            >
+              Confirmação de presença
+            </p>
             <Field>
               <FieldLabel htmlFor="theme-preview-name">Nome completo</FieldLabel>
               <Input
