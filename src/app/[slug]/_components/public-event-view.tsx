@@ -1,39 +1,12 @@
 import type { ReactNode } from "react";
 
 import { EventIllustration } from "@/components/event-illustration";
-import { formatEventDate, formatEventTime } from "@/lib/event-date";
+import { formatInviteDateTimeLine } from "@/lib/event-date";
 import {
   illustrationAspect,
   type EventPageLayout,
 } from "@/lib/event-illustration";
 import { cn } from "@/lib/utils";
-
-function Detail({
-  label,
-  value,
-  titleColor,
-}: {
-  label: string;
-  value: string;
-  titleColor: string | null;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <dt
-        className={cn("text-sm", titleColor ? undefined : "text-muted-foreground")}
-        style={titleColor ? { color: titleColor } : undefined}
-      >
-        {label}
-      </dt>
-      <dd
-        className="font-heading text-lg"
-        style={titleColor ? { color: titleColor } : undefined}
-      >
-        {value}
-      </dd>
-    </div>
-  );
-}
 
 export function PublicEventView({
   title,
@@ -108,19 +81,12 @@ export function PublicEventView({
               ) : null}
             </header>
 
-            <dl className="grid gap-4 border-y border-border py-6 sm:grid-cols-3">
-              <Detail
-                label="Data"
-                value={formatEventDate(eventDate)}
-                titleColor={titleColor}
-              />
-              <Detail
-                label="Horário"
-                value={formatEventTime(eventTime)}
-                titleColor={titleColor}
-              />
-              <Detail label="Local" value={location} titleColor={titleColor} />
-            </dl>
+            <section className="flex flex-col items-center gap-2 border-y border-border py-6 text-center font-heading text-lg">
+              <p style={titleStyle}>
+                {formatInviteDateTimeLine(eventDate, eventTime)}
+              </p>
+              <p style={titleStyle}>{location}</p>
+            </section>
           </>
         )}
 
