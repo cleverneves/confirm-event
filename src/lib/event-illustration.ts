@@ -9,10 +9,10 @@ export const DEFAULT_PAGE_LAYOUT: EventPageLayout = "personalized";
 export type IllustrationAspect = "banner" | "portrait";
 
 export const ILLUSTRATION_FIELD_HELP =
-  "Opcional. Use jpg ou png, no máximo 8 MB. Proporção 4:1; tamanho ideal 1584×396.";
+  "tamanho ideal 1584×396 • Máximo 8 MB";
 
 export const ILLUSTRATION_FIELD_HELP_IMAGE_ONLY =
-  "Obrigatória. Use jpg ou png, no máximo 8 MB. Tamanho ideal 700×923.";
+  "Tamanho ideal 700×923 • Máximo 8 MB • jpg ou png";
 
 export const ILLUSTRATION_ASPECT_WARNING =
   "A imagem pode ficar desconfigurada. A faixa é 4:1 e a imagem preenche o espaço.";

@@ -51,15 +51,11 @@ export function EventThemeDialog({ event }: { event: PainelEvent }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant="outline" />}>
         <PaletteIcon data-icon="inline-start" />
-        Personalizar tema
+        Personalizar
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Tema da página pública</DialogTitle>
-          <DialogDescription>
-            A prévia mostra o rascunho. A página do convite só muda depois de
-            salvar, ou ao voltar ao tema padrão.
-          </DialogDescription>
+          <DialogTitle>Personalizar a página do evento</DialogTitle>
         </DialogHeader>
         <EventThemeForm
           key={`${event.backgroundColor ?? ""}-${event.titleColor ?? ""}-${event.buttonColor ?? ""}`}
@@ -256,7 +252,7 @@ function EventThemeForm({
           onClick={() => void handleRestoreDefault()}
         >
           {isRestoring ? <Spinner data-icon="inline-start" /> : null}
-          Voltar ao tema padrão
+          Redefinir tema
         </Button>
         <Button type="submit" disabled={isBusy}>
           {isSubmitting ? <Spinner data-icon="inline-start" /> : null}

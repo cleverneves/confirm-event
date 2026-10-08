@@ -360,9 +360,7 @@ export function EventFieldsForm({
                     <FieldContent>
                       <FieldTitle>Personalizado</FieldTitle>
                       <FieldDescription>
-                        O convidado vê a faixa, se houver, o título, os
-                        detalhes, a data, o horário e o local, e depois a
-                        confirmação.
+                        Exibe todas as informações editáveis.
                       </FieldDescription>
                     </FieldContent>
                   </Field>
@@ -373,7 +371,7 @@ export function EventFieldsForm({
                     <FieldContent>
                       <FieldTitle>Somente imagem</FieldTitle>
                       <FieldDescription>
-                        O convidado vê somente a imagem e depois a confirmação.
+                        Exibe a imagem do evento.
                       </FieldDescription>
                     </FieldContent>
                   </Field>
@@ -422,8 +420,7 @@ export function EventFieldsForm({
         <FieldSet>
           <FieldLegend>Janela de confirmação (opcional)</FieldLegend>
           <FieldDescription>
-            O dia de início aceita nome. O dia de fim não aceita. Sem janela, a
-            confirmação fica aberta até a véspera do evento.
+            Início e fim que a confirmação fica disponível para o convidado.
           </FieldDescription>
           <Controller
             name="confirmationStartsOn"

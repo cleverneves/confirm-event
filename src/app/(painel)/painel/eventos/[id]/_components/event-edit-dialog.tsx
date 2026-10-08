@@ -25,14 +25,11 @@ export function EventEditDialog({ event }: { event: PainelEvent }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant="outline" />}>
         <PencilIcon data-icon="inline-start" />
-        Editar Dados do Evento
+        Editar
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Editar dados do evento</DialogTitle>
-          <DialogDescription>
-            O que estiver gravado aparece na página pública deste evento.
-          </DialogDescription>
+          <DialogTitle>Editar evento</DialogTitle>
         </DialogHeader>
         <EventFieldsForm
           key={`${event.title}-${event.eventDate}-${event.eventTime}-${event.location}-${event.details ?? ""}-${event.confirmationStartsOn ?? ""}-${event.confirmationEndsOn ?? ""}-${event.pageLayout}-${event.hasIllustration}-${event.updatedAt}`}
