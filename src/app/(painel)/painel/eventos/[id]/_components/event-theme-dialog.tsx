@@ -211,6 +211,7 @@ function EventThemeForm({
           location={event.location}
           titleColor={titleColor || null}
           backgroundColor={effectiveBackground}
+          layout={event.pageLayout}
           imageUrl={
             event.hasIllustration
               ? eventIllustrationUrl(event.slug, event.updatedAt)
@@ -241,7 +242,7 @@ function EventThemeForm({
               tabIndex={-1}
               style={buttonThemeStyle(buttonColor || null, previewButtonText)}
             >
-              Eu vou!
+              confirmo
             </Button>
           </FieldGroup>
         </PublicEventView>

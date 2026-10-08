@@ -1,8 +1,10 @@
 import {
   detectIllustrationContentType,
+  IMAGE_ONLY_REQUIRES_IMAGE_MESSAGE,
   ILLUSTRATION_INVALID_TYPE_MESSAGE,
   ILLUSTRATION_MAX_BYTES,
   ILLUSTRATION_TOO_LARGE_MESSAGE,
+  type EventPageLayout,
   type IllustrationContentType,
 } from "@/lib/event-illustration";
 
@@ -92,4 +94,66 @@ export function illustrationColumns(change: IllustrationFormChange) {
   }
 
   return {};
+}
+
+type AcceptedIllustrationChange = Exclude<
+  IllustrationFormChange,
+  { kind: "invalid" }
+>;
+
+export type PageLayoutSaveResult =
+  | {
+      kind: "ok";
+      pageLayout: EventPageLayout;
+      illustration: AcceptedIllustrationChange;
+    }
+  | { kind: "invalid"; message: string };
+
+export function resolvePageLayoutSave({
+  requestedLayout,
+  persistedLayout,
+  persistedHasIllustration,
+  illustration,
+}: {
+  requestedLayout: EventPageLayout;
+  persistedLayout: EventPageLayout | null;
+  persistedHasIllustration: boolean;
+  illustration: IllustrationFormChange;
+}): PageLayoutSaveResult {
+  if (illustration.kind === "invalid") {
+    return { kind: "invalid", message: illustration.message };
+  }
+
+  const layoutChanged =
+    persistedLayout !== null && requestedLayout !== persistedLayout;
+
+  if (requestedLayout === "image_only") {
+    if (illustration.kind === "replace") {
+      return { kind: "ok", pageLayout: requestedLayout, illustration };
+    }
+
+    if (
+      !layoutChanged &&
+      persistedHasIllustration &&
+      illustration.kind === "unchanged"
+    ) {
+      return { kind: "ok", pageLayout: requestedLayout, illustration };
+    }
+
+    return { kind: "invalid", message: IMAGE_ONLY_REQUIRES_IMAGE_MESSAGE };
+  }
+
+  if (illustration.kind === "replace") {
+    return { kind: "ok", pageLayout: requestedLayout, illustration };
+  }
+
+  if (layoutChanged) {
+    return {
+      kind: "ok",
+      pageLayout: requestedLayout,
+      illustration: { kind: "remove" },
+    };
+  }
+
+  return { kind: "ok", pageLayout: requestedLayout, illustration };
 }

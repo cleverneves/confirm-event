@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { isDateBeforeToday, isValidCalendarDate } from "@/lib/event-date";
+import { PAGE_LAYOUTS } from "@/lib/event-illustration";
 import { isValidSlug, normalizeSlug } from "@/lib/slug";
 
 const WINDOW_PAIR_MESSAGE =
@@ -14,6 +15,7 @@ const eventFieldsObject = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe um dia válido"),
   eventTime: z.string().regex(/^\d{2}:\d{2}$/, "Informe um horário válido"),
   location: z.string().trim().min(1, "Informe o local"),
+  layout: z.enum(PAGE_LAYOUTS),
   confirmationStartsOn: z.string(),
   confirmationEndsOn: z.string(),
 });
@@ -58,6 +60,7 @@ export type EventFieldErrors = {
   eventDate?: string[];
   eventTime?: string[];
   location?: string[];
+  layout?: string[];
   confirmationStartsOn?: string[];
   confirmationEndsOn?: string[];
   illustration?: string[];
@@ -70,6 +73,7 @@ export function eventFieldsFromFormData(formData: FormData): EventFields {
     eventDate: String(formData.get("eventDate") ?? ""),
     eventTime: String(formData.get("eventTime") ?? ""),
     location: String(formData.get("location") ?? ""),
+    layout: String(formData.get("layout") ?? "") as EventFields["layout"],
     confirmationStartsOn: String(formData.get("confirmationStartsOn") ?? ""),
     confirmationEndsOn: String(formData.get("confirmationEndsOn") ?? ""),
   };

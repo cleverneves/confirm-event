@@ -165,7 +165,7 @@ function ConfirmationForm({
           style={buttonThemeStyle(buttonColor, buttonTextColor)}
         >
           {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
-          Eu vou!
+          confirmo
         </Button>
       </FieldGroup>
     </form>

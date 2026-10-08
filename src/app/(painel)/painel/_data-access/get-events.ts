@@ -1,6 +1,10 @@
 import { resolveEventConfirmation } from "@/lib/confirmation-window";
 import { requireOrganizer } from "@/lib/auth/require-organizer";
-import { eventIllustrationUrl } from "@/lib/event-illustration";
+import {
+  eventIllustrationUrl,
+  parsePageLayout,
+  type EventPageLayout,
+} from "@/lib/event-illustration";
 
 export type EventListItem = {
   id: number;
@@ -10,6 +14,7 @@ export type EventListItem = {
   location: string;
   slug: string;
   confirmationOpen: boolean;
+  pageLayout: EventPageLayout;
   imageUrl: string | null;
 };
 
@@ -19,7 +24,7 @@ export async function getEvents() {
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id, title, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, illustration_content_type, updated_at"
+      "id, title, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, illustration_content_type, page_layout, updated_at"
     )
     .order("event_date", { ascending: true })
     .order("title", { ascending: true });
@@ -48,6 +53,7 @@ export async function getEvents() {
         location: event.location,
         slug: event.slug,
         confirmationOpen: confirmation.status === "open",
+        pageLayout: parsePageLayout(event.page_layout),
         imageUrl: event.illustration_content_type
           ? eventIllustrationUrl(event.slug, event.updated_at)
           : null,

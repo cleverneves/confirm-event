@@ -3,6 +3,10 @@ import {
   type ConfirmationResolution,
 } from "@/lib/confirmation-window";
 import { requireOrganizer } from "@/lib/auth/require-organizer";
+import {
+  parsePageLayout,
+  type EventPageLayout,
+} from "@/lib/event-illustration";
 import { parseStoredColor } from "@/lib/event-theme";
 
 export type PainelEvent = {
@@ -21,6 +25,7 @@ export type PainelEvent = {
   backgroundColor: string | null;
   titleColor: string | null;
   buttonColor: string | null;
+  pageLayout: EventPageLayout;
   hasIllustration: boolean;
   updatedAt: string;
 };
@@ -45,7 +50,7 @@ export async function getPainelEvent(eventId: number) {
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color, title_color, button_color, illustration_content_type, updated_at"
+      "id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color, title_color, button_color, illustration_content_type, page_layout, updated_at"
     )
     .eq("id", eventId)
     .maybeSingle();
@@ -77,6 +82,7 @@ export async function getPainelEvent(eventId: number) {
     backgroundColor: parseStoredColor(data.background_color),
     titleColor: parseStoredColor(data.title_color),
     buttonColor: parseStoredColor(data.button_color),
+    pageLayout: parsePageLayout(data.page_layout),
     hasIllustration: Boolean(data.illustration_content_type),
     updatedAt: data.updated_at,
   } satisfies PainelEvent;

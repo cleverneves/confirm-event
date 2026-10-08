@@ -11,22 +11,28 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Field,
+  FieldContent,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
   FieldLegend,
   FieldSet,
+  FieldTitle,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  hasFourToOneAspect,
-  ILLUSTRATION_ASPECT_WARNING,
-  ILLUSTRATION_FIELD_HELP,
+  hasLayoutAspect,
+  illustrationAspect,
+  illustrationAspectWarning,
+  illustrationFieldHelp,
+  IMAGE_ONLY_REQUIRES_IMAGE_MESSAGE,
   ILLUSTRATION_INVALID_TYPE_MESSAGE,
   validateIllustrationFile,
+  type EventPageLayout,
 } from "@/lib/event-illustration";
 import {
   makeEventFieldsSchema,
@@ -62,6 +68,7 @@ export function EventFieldsForm({
   currentDate,
   submitLabel,
   savedImageUrl,
+  persistedLayout = null,
   onSubmit,
   onSuccess,
 }: {
@@ -69,6 +76,7 @@ export function EventFieldsForm({
   currentDate?: string;
   submitLabel: string;
   savedImageUrl?: string | null;
+  persistedLayout?: EventPageLayout | null;
   onSubmit: (formData: FormData) => Promise<SubmitResult>;
   onSuccess?: () => void;
 }) {
@@ -80,9 +88,12 @@ export function EventFieldsForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [imageSize, setImageSize] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   const [shouldRemoveIllustration, setShouldRemoveIllustration] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
-  const [hasAspectWarning, setHasAspectWarning] = useState(false);
   const form = useForm<EventFields>({
     resolver: zodResolver(schema),
     defaultValues,
@@ -96,8 +107,25 @@ export function EventFieldsForm({
     };
   }, [objectUrl]);
 
-  const previewUrl = objectUrl ?? (shouldRemoveIllustration ? null : savedImageUrl ?? null);
+  const selectedLayout = form.watch("layout");
+  const canUseSavedImage =
+    Boolean(savedImageUrl) &&
+    persistedLayout === selectedLayout &&
+    !shouldRemoveIllustration;
+  const previewUrl = objectUrl ?? (canUseSavedImage ? savedImageUrl ?? null : null);
   const previewAlt = form.watch("title").trim() || "Prévia da imagem do evento";
+  const hasAspectWarning =
+    imageSize !== null &&
+    !hasLayoutAspect(selectedLayout, imageSize.width, imageSize.height);
+
+  function clearSelectedFile() {
+    setSelectedFile(null);
+    setImageSize(null);
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+    }
+    setObjectUrl(null);
+  }
 
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -110,12 +138,7 @@ export function EventFieldsForm({
 
     if (selectionError) {
       setFileError(selectionError);
-      setSelectedFile(null);
-      setHasAspectWarning(false);
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
-      setObjectUrl(null);
+      clearSelectedFile();
       event.target.value = "";
       return;
     }
@@ -124,12 +147,7 @@ export function EventFieldsForm({
 
     if (!size) {
       setFileError(ILLUSTRATION_INVALID_TYPE_MESSAGE);
-      setSelectedFile(null);
-      setHasAspectWarning(false);
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
-      setObjectUrl(null);
+      clearSelectedFile();
       event.target.value = "";
       return;
     }
@@ -140,32 +158,39 @@ export function EventFieldsForm({
 
     setFileError(null);
     setSelectedFile(file);
+    setImageSize(size);
     setShouldRemoveIllustration(false);
-    setHasAspectWarning(!hasFourToOneAspect(size.width, size.height));
     setObjectUrl(URL.createObjectURL(file));
   }
 
   function handleRemoveIllustration() {
-    setSelectedFile(null);
+    clearSelectedFile();
     setFileError(null);
-    setHasAspectWarning(false);
     setShouldRemoveIllustration(true);
-    if (objectUrl) {
-      URL.revokeObjectURL(objectUrl);
-    }
-    setObjectUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   }
 
   async function handleSubmit(values: EventFields) {
+    const keepsSavedImage =
+      persistedLayout === values.layout &&
+      Boolean(savedImageUrl) &&
+      !shouldRemoveIllustration;
+
+    if (values.layout === "image_only" && !selectedFile && !keepsSavedImage) {
+      setFileError(IMAGE_ONLY_REQUIRES_IMAGE_MESSAGE);
+      toast.error(IMAGE_ONLY_REQUIRES_IMAGE_MESSAGE);
+      return;
+    }
+
     const formData = new FormData();
     formData.set("title", values.title);
     formData.set("details", values.details);
     formData.set("eventDate", values.eventDate);
     formData.set("eventTime", values.eventTime);
     formData.set("location", values.location);
+    formData.set("layout", values.layout);
     formData.set("confirmationStartsOn", values.confirmationStartsOn);
     formData.set("confirmationEndsOn", values.confirmationEndsOn);
 
@@ -195,6 +220,9 @@ export function EventFieldsForm({
       if (result.errors?.location) {
         form.setError("location", { message: result.errors.location[0] });
       }
+      if (result.errors?.layout) {
+        form.setError("layout", { message: result.errors.layout[0] });
+      }
       if (result.errors?.confirmationStartsOn) {
         form.setError("confirmationStartsOn", {
           message: result.errors.confirmationStartsOn[0],
@@ -220,6 +248,7 @@ export function EventFieldsForm({
   }
 
   const isSubmitting = form.formState.isSubmitting;
+  const isImageRequired = selectedLayout === "image_only";
 
   return (
     <form className="flex flex-col gap-6" onSubmit={form.handleSubmit(handleSubmit)}>
@@ -311,15 +340,68 @@ export function EventFieldsForm({
             </Field>
           )}
         />
+        <Controller
+          name="layout"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <FieldSet>
+              <FieldLegend variant="label">Layout da página</FieldLegend>
+              <RadioGroup
+                value={field.value}
+                onValueChange={field.onChange}
+                aria-invalid={fieldState.invalid}
+              >
+                <FieldLabel htmlFor="layout-personalized">
+                  <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                    <RadioGroupItem
+                      value="personalized"
+                      id="layout-personalized"
+                    />
+                    <FieldContent>
+                      <FieldTitle>Personalizado</FieldTitle>
+                      <FieldDescription>
+                        O convidado vê a faixa, se houver, o título, os
+                        detalhes, a data, o horário e o local, e depois a
+                        confirmação.
+                      </FieldDescription>
+                    </FieldContent>
+                  </Field>
+                </FieldLabel>
+                <FieldLabel htmlFor="layout-image-only">
+                  <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                    <RadioGroupItem value="image_only" id="layout-image-only" />
+                    <FieldContent>
+                      <FieldTitle>Somente imagem</FieldTitle>
+                      <FieldDescription>
+                        O convidado vê somente a imagem e depois a confirmação.
+                      </FieldDescription>
+                    </FieldContent>
+                  </Field>
+                </FieldLabel>
+              </RadioGroup>
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : null}
+            </FieldSet>
+          )}
+        />
         <Field data-invalid={Boolean(fileError)}>
-          <FieldLabel htmlFor="event-illustration">Imagem (opcional)</FieldLabel>
-          <FieldDescription>{ILLUSTRATION_FIELD_HELP}</FieldDescription>
+          <FieldLabel htmlFor="event-illustration">
+            {isImageRequired ? "Imagem" : "Imagem (opcional)"}
+          </FieldLabel>
+          <FieldDescription>{illustrationFieldHelp(selectedLayout)}</FieldDescription>
           {previewUrl ? (
-            <EventIllustration src={previewUrl} alt={previewAlt} />
+            <EventIllustration
+              src={previewUrl}
+              alt={previewAlt}
+              aspect={illustrationAspect(selectedLayout)}
+            />
           ) : null}
           {hasAspectWarning ? (
             <Alert>
-              <AlertDescription>{ILLUSTRATION_ASPECT_WARNING}</AlertDescription>
+              <AlertDescription>
+                {illustrationAspectWarning(selectedLayout)}
+              </AlertDescription>
             </Alert>
           ) : null}
           <Input

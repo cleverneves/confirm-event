@@ -4,9 +4,11 @@ import { revalidatePath } from "next/cache";
 
 import { requireOrganizer } from "@/lib/auth/require-organizer";
 import { isDateBeforeToday } from "@/lib/event-date";
+import { parsePageLayout } from "@/lib/event-illustration";
 import {
   illustrationColumns,
   readIllustrationFromFormData,
+  resolvePageLayoutSave,
 } from "@/lib/event-illustration-server";
 import {
   confirmationWindowColumns,
@@ -43,17 +45,9 @@ export async function updateEventAction(
 
   const illustration = await readIllustrationFromFormData(formData);
 
-  if (illustration.kind === "invalid") {
-    return {
-      success: false,
-      errors: { illustration: [illustration.message] },
-      message: illustration.message,
-    };
-  }
-
   const { data: current, error: currentError } = await supabase
     .from("events")
-    .select("event_date, slug")
+    .select("event_date, slug, page_layout, illustration_content_type")
     .eq("id", eventId)
     .maybeSingle();
 
@@ -76,6 +70,21 @@ export async function updateEventAction(
     };
   }
 
+  const resolved = resolvePageLayoutSave({
+    requestedLayout: validation.data.layout,
+    persistedLayout: parsePageLayout(current.page_layout),
+    persistedHasIllustration: Boolean(current.illustration_content_type),
+    illustration,
+  });
+
+  if (resolved.kind === "invalid") {
+    return {
+      success: false,
+      errors: { illustration: [resolved.message] },
+      message: resolved.message,
+    };
+  }
+
   const window = confirmationWindowColumns(validation.data);
 
   const { error } = await supabase
@@ -88,8 +97,9 @@ export async function updateEventAction(
       location: validation.data.location,
       confirmation_starts_on: window.confirmation_starts_on,
       confirmation_ends_on: window.confirmation_ends_on,
+      page_layout: resolved.pageLayout,
       updated_at: new Date().toISOString(),
-      ...illustrationColumns(illustration),
+      ...illustrationColumns(resolved.illustration),
     })
     .eq("id", eventId);
 

@@ -26,6 +26,7 @@ export function PublicContent({
       titleColor={theme.titleColor}
       backgroundColor={theme.backgroundColor}
       imageUrl={event.imageUrl}
+      layout={event.pageLayout}
     >
       <ConfirmationSection
         slug={slug}

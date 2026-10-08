@@ -18,6 +18,7 @@ export type Database = {
           button_color: string | null;
           illustration: string | null;
           illustration_content_type: string | null;
+          page_layout: string;
           created_at: string;
           updated_at: string;
         };
@@ -37,6 +38,7 @@ export type Database = {
           button_color?: string | null;
           illustration?: string | null;
           illustration_content_type?: string | null;
+          page_layout?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -56,6 +58,7 @@ export type Database = {
           button_color?: string | null;
           illustration?: string | null;
           illustration_content_type?: string | null;
+          page_layout?: string;
           created_at?: string;
           updated_at?: string;
         };

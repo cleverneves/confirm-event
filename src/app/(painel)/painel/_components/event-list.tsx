@@ -13,6 +13,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { formatEventDate, formatEventTime } from "@/lib/event-date";
+import { illustrationAspect } from "@/lib/event-illustration";
 
 export function EventList({ events }: { events: EventListItem[] }) {
   if (events.length === 0) {
@@ -42,7 +43,11 @@ export function EventList({ events }: { events: EventListItem[] }) {
             className="flex flex-col gap-3 rounded-lg bg-card p-5 shadow-panel ring-1 ring-muted-foreground/20 transition-shadow hover:shadow-elevated"
           >
             {event.imageUrl ? (
-              <EventIllustration src={event.imageUrl} alt={event.title} />
+              <EventIllustration
+                src={event.imageUrl}
+                alt={event.title}
+                aspect={illustrationAspect(event.pageLayout)}
+              />
             ) : null}
             <div className="flex items-start justify-between gap-3">
               <p className="font-heading text-xl leading-none tracking-tight">

@@ -1,8 +1,12 @@
 import type { ReactNode } from "react";
 
 import { EventIllustration } from "@/components/event-illustration";
-import { cn } from "@/lib/utils";
 import { formatEventDate, formatEventTime } from "@/lib/event-date";
+import {
+  illustrationAspect,
+  type EventPageLayout,
+} from "@/lib/event-illustration";
+import { cn } from "@/lib/utils";
 
 function Detail({
   label,
@@ -40,6 +44,7 @@ export function PublicEventView({
   titleColor,
   backgroundColor,
   imageUrl,
+  layout = "personalized",
   variant = "page",
   children,
 }: {
@@ -51,6 +56,7 @@ export function PublicEventView({
   titleColor: string | null;
   backgroundColor?: string | null;
   imageUrl?: string | null;
+  layout?: EventPageLayout;
   variant?: "page" | "preview";
   children: ReactNode;
 }) {
@@ -58,6 +64,7 @@ export function PublicEventView({
   const titleStyle = titleColor ? { color: titleColor } : undefined;
   const mutedClass = titleColor ? undefined : "text-muted-foreground";
   const isPreview = variant === "preview";
+  const isImageOnly = layout === "image_only";
 
   return (
     <div
@@ -74,38 +81,48 @@ export function PublicEventView({
           isPreview ? "gap-8 px-4 py-8" : "gap-12 px-6 py-16"
         )}
       >
-        {imageUrl ? <EventIllustration src={imageUrl} alt={title} /> : null}
-
-        <header className="flex flex-col gap-4 text-center">
-          <h1
-            className={cn(
-              "font-heading leading-none tracking-tight",
-              isPreview ? "text-3xl" : "text-5xl sm:text-6xl"
-            )}
-            style={titleStyle}
-          >
-            {title}
-          </h1>
-          {trimmedDetails ? (
-            <p className={cn("mx-auto max-w-sm", mutedClass)} style={titleStyle}>
-              {trimmedDetails}
-            </p>
-          ) : null}
-        </header>
-
-        <dl className="grid gap-4 border-y border-border py-6 sm:grid-cols-3">
-          <Detail
-            label="Data"
-            value={formatEventDate(eventDate)}
-            titleColor={titleColor}
+        {imageUrl ? (
+          <EventIllustration
+            src={imageUrl}
+            alt={title}
+            aspect={illustrationAspect(layout)}
           />
-          <Detail
-            label="Horário"
-            value={formatEventTime(eventTime)}
-            titleColor={titleColor}
-          />
-          <Detail label="Local" value={location} titleColor={titleColor} />
-        </dl>
+        ) : null}
+
+        {isImageOnly ? null : (
+          <>
+            <header className="flex flex-col gap-4 text-center">
+              <h1
+                className={cn(
+                  "font-heading leading-none tracking-tight",
+                  isPreview ? "text-3xl" : "text-5xl sm:text-6xl"
+                )}
+                style={titleStyle}
+              >
+                {title}
+              </h1>
+              {trimmedDetails ? (
+                <p className={cn("mx-auto max-w-sm", mutedClass)} style={titleStyle}>
+                  {trimmedDetails}
+                </p>
+              ) : null}
+            </header>
+
+            <dl className="grid gap-4 border-y border-border py-6 sm:grid-cols-3">
+              <Detail
+                label="Data"
+                value={formatEventDate(eventDate)}
+                titleColor={titleColor}
+              />
+              <Detail
+                label="Horário"
+                value={formatEventTime(eventTime)}
+                titleColor={titleColor}
+              />
+              <Detail label="Local" value={location} titleColor={titleColor} />
+            </dl>
+          </>
+        )}
 
         {children}
       </main>

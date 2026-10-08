@@ -7,6 +7,7 @@ import { requireOrganizer } from "@/lib/auth/require-organizer";
 import {
   illustrationColumns,
   readIllustrationFromFormData,
+  resolvePageLayoutSave,
 } from "@/lib/event-illustration-server";
 import {
   confirmationWindowColumns,
@@ -39,12 +40,18 @@ export async function createEventAction(
   }
 
   const illustration = await readIllustrationFromFormData(formData);
+  const resolved = resolvePageLayoutSave({
+    requestedLayout: validation.data.layout,
+    persistedLayout: null,
+    persistedHasIllustration: false,
+    illustration,
+  });
 
-  if (illustration.kind === "invalid") {
+  if (resolved.kind === "invalid") {
     return {
       success: false,
-      errors: { illustration: [illustration.message] },
-      message: illustration.message,
+      errors: { illustration: [resolved.message] },
+      message: resolved.message,
     };
   }
 
@@ -79,7 +86,8 @@ export async function createEventAction(
       slug,
       confirmation_starts_on: window.confirmation_starts_on,
       confirmation_ends_on: window.confirmation_ends_on,
-      ...illustrationColumns(illustration),
+      page_layout: resolved.pageLayout,
+      ...illustrationColumns(resolved.illustration),
     })
     .select("id")
     .single();
