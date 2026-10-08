@@ -92,13 +92,13 @@ export function EventLink({
     <div className="flex flex-col gap-4 border-t border-border pt-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-          <p className="text-sm text-muted-foreground">Link personalizado:</p>
+          <p className="text-sm text-muted-foreground">Link do evento:</p>
           <p className="truncate font-medium">{currentUrl}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="button" onClick={handleCopy}>
             <CopyIcon data-icon="inline-start" />
-            Copiar Link do Convite
+            Copiar Link
           </Button>
           <Button
             type="button"
@@ -157,7 +157,7 @@ export function EventLink({
           className="w-fit"
           onClick={() => setIsEditingSlug(true)}
         >
-          Alterar trecho do link
+          Editar trecho do link
         </Button>
       )}
     </div>

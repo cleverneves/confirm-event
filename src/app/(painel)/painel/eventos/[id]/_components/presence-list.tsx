@@ -240,7 +240,7 @@ export function PresenceList({
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-1">
-          <CardTitle>Gestão de Convidados Confirmados</CardTitle>
+          <CardTitle>Gestão de Convidados</CardTitle>
           <CardDescription>
             {total === 1
               ? "1 pessoa confirmou presença."
@@ -263,7 +263,7 @@ export function PresenceList({
         {confirmations.length === 0 ? (
           <Empty className="border">
             <EmptyHeader>
-              <EmptyTitle>Ninguém confirmou ainda</EmptyTitle>
+              <EmptyTitle>Nenhuma confirmação ainda</EmptyTitle>
               <EmptyDescription>
                 As confirmações da página pública deste evento aparecem aqui.
               </EmptyDescription>
@@ -283,8 +283,8 @@ export function PresenceList({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome completo do convidado</TableHead>
-                  <TableHead>Data/hora da confirmação</TableHead>
+                  <TableHead>Nome do convidado</TableHead>
+                  <TableHead>Confirmação em</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
