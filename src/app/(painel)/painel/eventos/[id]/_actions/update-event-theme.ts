@@ -46,9 +46,10 @@ export async function updateEventThemeAction(
   const { error } = await supabase
     .from("events")
     .update({
-      background_color: validation.data.backgroundColor,
+      background_color_1: validation.data.backgroundColor1,
+      background_color_2: validation.data.backgroundColor2,
       title_color: validation.data.titleColor,
-      button_color: validation.data.buttonColor,
+      text_color: validation.data.textColor,
       updated_at: new Date().toISOString(),
     })
     .eq("id", eventId);
@@ -64,9 +65,10 @@ export async function updateEventThemeAction(
   revalidatePath(`/${current.slug}`);
 
   const isDefault =
-    validation.data.backgroundColor === null &&
+    validation.data.backgroundColor1 === null &&
+    validation.data.backgroundColor2 === null &&
     validation.data.titleColor === null &&
-    validation.data.buttonColor === null;
+    validation.data.textColor === null;
 
   return {
     success: true,

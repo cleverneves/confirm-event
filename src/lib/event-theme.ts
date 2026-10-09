@@ -1,44 +1,58 @@
 import { z } from "zod";
 
-export const DEFAULT_BACKGROUND_COLOR = "#f3f5f7";
+export const DEFAULT_BACKGROUND_COLOR_1 = "#f3f5f7";
+export const DEFAULT_BACKGROUND_COLOR_2 = "#e0e1dd";
 export const DEFAULT_TITLE_COLOR = "#0d1b2a";
-export const DEFAULT_BUTTON_COLOR = "#0d1b2a";
+export const DEFAULT_TEXT_COLOR = "#0d1b2a";
 export const BUTTON_TEXT_LIGHT = "#e0e1dd";
 export const BUTTON_TEXT_DARK = "#0d1b2a";
 
-export const TITLE_CONTRAST_WARNING =
-  "O título pode ficar difícil de ler neste fundo. Você ainda pode salvar.";
+export const TITLE_ON_TOP_CONTRAST_WARNING =
+  "O título pode ficar difícil de ler sobre a cor de cima. Você ainda pode salvar.";
+export const TEXT_ON_TOP_CONTRAST_WARNING =
+  "O texto pode ficar difícil de ler sobre a cor de cima. Você ainda pode salvar.";
+export const TEXT_ON_BOTTOM_CONTRAST_WARNING =
+  "O texto pode ficar difícil de ler sobre a cor de baixo. Você ainda pode salvar.";
 
 const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/;
 const STORED_HEX_PATTERN = /^#[0-9A-Fa-f]{6}$/;
 const CONTRAST_THRESHOLD = 4.5;
+const INVALID_COLOR_MESSAGE = "Informe uma cor válida";
 
 export type StoredEventTheme = {
-  backgroundColor: string | null;
+  backgroundColor1: string | null;
+  backgroundColor2: string | null;
   titleColor: string | null;
-  buttonColor: string | null;
+  textColor: string | null;
 };
 
 export type EventThemeFields = {
-  backgroundColor: string;
+  backgroundColor1: string;
+  backgroundColor2: string;
   titleColor: string;
-  buttonColor: string;
+  textColor: string;
 };
 
 export type EventThemeFieldErrors = {
-  backgroundColor?: string[];
+  backgroundColor1?: string[];
+  backgroundColor2?: string[];
   titleColor?: string[];
-  buttonColor?: string[];
+  textColor?: string[];
 };
 
 export type ResolvedEventTheme = {
-  backgroundColor: string | null;
+  backgroundColor1: string | null;
+  backgroundColor2: string | null;
   titleColor: string | null;
-  buttonColor: string | null;
-  buttonTextColor: string;
-  effectiveBackgroundColor: string;
+  textColor: string | null;
+  effectiveBackgroundColor1: string;
+  effectiveBackgroundColor2: string;
   effectiveTitleColor: string;
-  effectiveButtonColor: string;
+  effectiveTextColor: string;
+  /** O botão sempre usa a cor 1 efetiva. */
+  buttonColor: string;
+  buttonTextColor: string;
+  backgroundImage: string;
 };
 
 const colorInput = z
@@ -52,13 +66,14 @@ const colorInput = z
     return trimmed === "" ? null : trimmed.toLowerCase();
   })
   .refine((value) => value === null || HEX_COLOR_PATTERN.test(value), {
-    message: "Informe uma cor válida",
+    message: INVALID_COLOR_MESSAGE,
   });
 
 export const eventThemeSchema = z.object({
-  backgroundColor: colorInput,
+  backgroundColor1: colorInput,
+  backgroundColor2: colorInput,
   titleColor: colorInput,
-  buttonColor: colorInput,
+  textColor: colorInput,
 });
 
 export type EventThemeInput = z.infer<typeof eventThemeSchema>;
@@ -66,14 +81,16 @@ export type EventThemeInput = z.infer<typeof eventThemeSchema>;
 const formColor = z
   .string()
   .trim()
-  .refine((value) => value === "" || HEX_COLOR_PATTERN.test(value.toLowerCase()), {
-    message: "Informe uma cor válida",
-  });
+  .refine(
+    (value) => value === "" || HEX_COLOR_PATTERN.test(value.toLowerCase()),
+    { message: INVALID_COLOR_MESSAGE }
+  );
 
 export const eventThemeFormSchema = z.object({
-  backgroundColor: formColor,
+  backgroundColor1: formColor,
+  backgroundColor2: formColor,
   titleColor: formColor,
-  buttonColor: formColor,
+  textColor: formColor,
 });
 
 export function parseStoredColor(value: string | null | undefined) {
@@ -84,20 +101,36 @@ export function parseStoredColor(value: string | null | undefined) {
   return value.toLowerCase();
 }
 
+export function backgroundGradient(topColor: string, bottomColor: string) {
+  return `linear-gradient(to bottom, ${topColor}, ${bottomColor})`;
+}
+
 export function resolveEventTheme(stored: StoredEventTheme): ResolvedEventTheme {
-  const backgroundColor = parseStoredColor(stored.backgroundColor);
+  const backgroundColor1 = parseStoredColor(stored.backgroundColor1);
+  const backgroundColor2 = parseStoredColor(stored.backgroundColor2);
   const titleColor = parseStoredColor(stored.titleColor);
-  const buttonColor = parseStoredColor(stored.buttonColor);
-  const effectiveButtonColor = buttonColor ?? DEFAULT_BUTTON_COLOR;
+  const textColor = parseStoredColor(stored.textColor);
+
+  const effectiveBackgroundColor1 =
+    backgroundColor1 ?? DEFAULT_BACKGROUND_COLOR_1;
+  const effectiveBackgroundColor2 =
+    backgroundColor2 ?? DEFAULT_BACKGROUND_COLOR_2;
 
   return {
-    backgroundColor,
+    backgroundColor1,
+    backgroundColor2,
     titleColor,
-    buttonColor,
-    buttonTextColor: buttonTextColor(effectiveButtonColor),
-    effectiveBackgroundColor: backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
+    textColor,
+    effectiveBackgroundColor1,
+    effectiveBackgroundColor2,
     effectiveTitleColor: titleColor ?? DEFAULT_TITLE_COLOR,
-    effectiveButtonColor,
+    effectiveTextColor: textColor ?? DEFAULT_TEXT_COLOR,
+    buttonColor: effectiveBackgroundColor1,
+    buttonTextColor: buttonTextColor(effectiveBackgroundColor1),
+    backgroundImage: backgroundGradient(
+      effectiveBackgroundColor1,
+      effectiveBackgroundColor2
+    ),
   };
 }
 
@@ -105,9 +138,10 @@ export function toThemeFormValues(stored: StoredEventTheme): EventThemeFields {
   const theme = resolveEventTheme(stored);
 
   return {
-    backgroundColor: theme.backgroundColor ?? "",
+    backgroundColor1: theme.backgroundColor1 ?? "",
+    backgroundColor2: theme.backgroundColor2 ?? "",
     titleColor: theme.titleColor ?? "",
-    buttonColor: theme.buttonColor ?? "",
+    textColor: theme.textColor ?? "",
   };
 }
 
@@ -118,8 +152,35 @@ export function contrastRatio(first: string, second: string) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-export function hasLowTitleContrast(backgroundColor: string, titleColor: string) {
-  return contrastRatio(backgroundColor, titleColor) < CONTRAST_THRESHOLD;
+export function hasLowContrast(firstColor: string, secondColor: string) {
+  return contrastRatio(firstColor, secondColor) < CONTRAST_THRESHOLD;
+}
+
+/**
+ * Avisos de contraste (não bloqueiam o salvamento), calculados com as cores efetivas:
+ * título x cor 1, texto x cor 1 e texto x cor 2. Não há aviso entre cor 1 e cor 2.
+ */
+export function getContrastWarnings(colors: {
+  backgroundColor1: string;
+  backgroundColor2: string;
+  titleColor: string;
+  textColor: string;
+}) {
+  const warnings: string[] = [];
+
+  if (hasLowContrast(colors.titleColor, colors.backgroundColor1)) {
+    warnings.push(TITLE_ON_TOP_CONTRAST_WARNING);
+  }
+
+  if (hasLowContrast(colors.textColor, colors.backgroundColor1)) {
+    warnings.push(TEXT_ON_TOP_CONTRAST_WARNING);
+  }
+
+  if (hasLowContrast(colors.textColor, colors.backgroundColor2)) {
+    warnings.push(TEXT_ON_BOTTOM_CONTRAST_WARNING);
+  }
+
+  return warnings;
 }
 
 export function buttonTextColor(buttonColor: string) {
@@ -130,13 +191,9 @@ export function buttonTextColor(buttonColor: string) {
 }
 
 export function buttonThemeStyle(
-  buttonColor: string | null,
+  buttonColor: string,
   textColor: string
-): { backgroundColor: string; color: string } | undefined {
-  if (!buttonColor) {
-    return undefined;
-  }
-
+): { backgroundColor: string; color: string } {
   return {
     backgroundColor: buttonColor,
     color: textColor,

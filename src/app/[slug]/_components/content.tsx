@@ -11,10 +11,12 @@ export function PublicContent({
   slug: string;
 }) {
   const theme = resolveEventTheme({
-    backgroundColor: event.backgroundColor,
+    backgroundColor1: event.backgroundColor1,
+    backgroundColor2: event.backgroundColor2,
     titleColor: event.titleColor,
-    buttonColor: event.buttonColor,
+    textColor: event.textColor,
   });
+  const isPersonalized = event.pageLayout === "personalized";
 
   return (
     <PublicEventView
@@ -23,8 +25,9 @@ export function PublicContent({
       eventDate={event.eventDate}
       eventTime={event.eventTime}
       location={event.location}
-      titleColor={theme.titleColor}
-      backgroundColor={theme.backgroundColor}
+      titleColor={theme.effectiveTitleColor}
+      textColor={theme.effectiveTextColor}
+      backgroundImage={theme.backgroundImage}
       imageUrl={event.imageUrl}
       layout={event.pageLayout}
     >
@@ -33,7 +36,7 @@ export function PublicContent({
         acceptsConfirmation={event.acceptsConfirmation}
         buttonColor={theme.buttonColor}
         buttonTextColor={theme.buttonTextColor}
-        titleColor={theme.titleColor}
+        textColor={isPersonalized ? theme.effectiveTextColor : null}
       />
     </PublicEventView>
   );

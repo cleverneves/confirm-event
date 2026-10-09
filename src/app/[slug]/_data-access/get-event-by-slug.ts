@@ -16,9 +16,10 @@ export type PublicEvent = {
   location: string;
   currentSlug: string;
   acceptsConfirmation: boolean;
-  backgroundColor: string | null;
+  backgroundColor1: string | null;
+  backgroundColor2: string | null;
   titleColor: string | null;
-  buttonColor: string | null;
+  textColor: string | null;
   pageLayout: EventPageLayout;
   imageUrl: string | null;
 };
@@ -28,7 +29,7 @@ export async function getPublicEvent(slug: string) {
   const { data, error } = await supabase
     .from("event_slugs")
     .select(
-      "slug, events(id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color, title_color, button_color, illustration_content_type, page_layout, updated_at)"
+      "slug, events(id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, illustration_content_type, page_layout, updated_at)"
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -59,9 +60,10 @@ export async function getPublicEvent(slug: string) {
     location: event.location,
     currentSlug: event.slug,
     acceptsConfirmation: confirmation.status === "open",
-    backgroundColor: parseStoredColor(event.background_color),
+    backgroundColor1: parseStoredColor(event.background_color_1),
+    backgroundColor2: parseStoredColor(event.background_color_2),
     titleColor: parseStoredColor(event.title_color),
-    buttonColor: parseStoredColor(event.button_color),
+    textColor: parseStoredColor(event.text_color),
     pageLayout: parsePageLayout(event.page_layout),
     imageUrl: event.illustration_content_type
       ? eventIllustrationUrl(event.slug, event.updated_at)

@@ -15,7 +15,8 @@ export function PublicEventView({
   eventTime,
   location,
   titleColor,
-  backgroundColor,
+  textColor,
+  backgroundImage,
   imageUrl,
   layout = "personalized",
   variant = "page",
@@ -26,16 +27,20 @@ export function PublicEventView({
   eventDate: string;
   eventTime: string;
   location: string;
-  titleColor: string | null;
-  backgroundColor?: string | null;
+  /** Cor efetiva do nome do evento (só usada no layout personalizado). */
+  titleColor: string;
+  /** Cor efetiva de detalhes, data/horário e local (só usada no layout personalizado). */
+  textColor: string;
+  /** Gradiente de fundo (cor 1 em cima, cor 2 embaixo). */
+  backgroundImage: string;
   imageUrl?: string | null;
   layout?: EventPageLayout;
   variant?: "page" | "preview";
   children: ReactNode;
 }) {
   const trimmedDetails = details?.trim();
-  const titleStyle = titleColor ? { color: titleColor } : undefined;
-  const mutedClass = titleColor ? undefined : "text-muted-foreground";
+  const titleStyle = { color: titleColor };
+  const textStyle = { color: textColor };
   const isPreview = variant === "preview";
   const isImageOnly = layout === "image_only";
 
@@ -46,7 +51,7 @@ export function PublicEventView({
           ? "overflow-hidden rounded-xl ring-1 ring-foreground/10"
           : "flex min-h-full flex-1 flex-col"
       }
-      style={backgroundColor ? { backgroundColor } : undefined}
+      style={{ backgroundImage }}
     >
       <main
         className={cn(
@@ -75,17 +80,17 @@ export function PublicEventView({
                 {title}
               </h1>
               {trimmedDetails ? (
-                <p className={cn("mx-auto max-w-sm", mutedClass)} style={titleStyle}>
+                <p className="mx-auto max-w-sm" style={textStyle}>
                   {trimmedDetails}
                 </p>
               ) : null}
             </header>
 
             <section className="flex flex-col items-center gap-2 border-y border-border py-6 text-center font-heading text-lg">
-              <p style={titleStyle}>
+              <p style={textStyle}>
                 {formatInviteDateTimeLine(eventDate, eventTime)}
               </p>
-              <p style={titleStyle}>{location}</p>
+              <p style={textStyle}>{location}</p>
             </section>
           </>
         )}

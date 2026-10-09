@@ -31,13 +31,14 @@ export function ConfirmationSection({
   acceptsConfirmation,
   buttonColor,
   buttonTextColor,
-  titleColor,
+  textColor,
 }: {
   slug: string;
   acceptsConfirmation: boolean;
-  buttonColor: string | null;
+  buttonColor: string;
   buttonTextColor: string;
-  titleColor: string | null;
+  /** Cor da frase "Confirmação de presença"; null mantém o visual atual (layout somente imagem). */
+  textColor: string | null;
 }) {
   const router = useRouter();
   const [isUnavailable, setIsUnavailable] = useState(!acceptsConfirmation);
@@ -51,7 +52,7 @@ export function ConfirmationSection({
       slug={slug}
       buttonColor={buttonColor}
       buttonTextColor={buttonTextColor}
-      titleColor={titleColor}
+      textColor={textColor}
       onUnavailable={() => {
         setIsUnavailable(true);
         router.refresh();
@@ -70,13 +71,13 @@ function ConfirmationForm({
   slug,
   buttonColor,
   buttonTextColor,
-  titleColor,
+  textColor,
   onUnavailable,
 }: {
   slug: string;
-  buttonColor: string | null;
+  buttonColor: string;
   buttonTextColor: string;
-  titleColor: string | null;
+  textColor: string | null;
   onUnavailable: () => void;
 }) {
   const [formError, setFormError] = useState<string | null>(null);
@@ -136,8 +137,8 @@ function ConfirmationForm({
 
       <FieldGroup>
         <p
-          className={cn("text-sm", titleColor ? undefined : "text-muted-foreground")}
-          style={titleColor ? { color: titleColor } : undefined}
+          className={cn("text-sm", textColor ? undefined : "text-muted-foreground")}
+          style={textColor ? { color: textColor } : undefined}
         >
           Confirmação de presença
         </p>

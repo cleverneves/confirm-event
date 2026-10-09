@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -31,18 +30,26 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { eventIllustrationUrl } from "@/lib/event-illustration";
 import {
+  backgroundGradient,
   buttonTextColor,
   buttonThemeStyle,
-  DEFAULT_BACKGROUND_COLOR,
-  DEFAULT_BUTTON_COLOR,
+  DEFAULT_BACKGROUND_COLOR_1,
+  DEFAULT_BACKGROUND_COLOR_2,
+  DEFAULT_TEXT_COLOR,
   DEFAULT_TITLE_COLOR,
   eventThemeFormSchema,
-  hasLowTitleContrast,
-  TITLE_CONTRAST_WARNING,
+  getContrastWarnings,
   toThemeFormValues,
   type EventThemeFields,
 } from "@/lib/event-theme";
 import { cn } from "@/lib/utils";
+
+const EMPTY_THEME_FIELDS: EventThemeFields = {
+  backgroundColor1: "",
+  backgroundColor2: "",
+  titleColor: "",
+  textColor: "",
+};
 
 export function EventThemeDialog({ event }: { event: PainelEvent }) {
   const [open, setOpen] = useState(false);
@@ -58,7 +65,7 @@ export function EventThemeDialog({ event }: { event: PainelEvent }) {
           <DialogTitle>Personalizar a página do evento</DialogTitle>
         </DialogHeader>
         <EventThemeForm
-          key={`${event.backgroundColor ?? ""}-${event.titleColor ?? ""}-${event.buttonColor ?? ""}`}
+          key={`${event.backgroundColor1 ?? ""}-${event.backgroundColor2 ?? ""}-${event.titleColor ?? ""}-${event.textColor ?? ""}-${event.pageLayout}`}
           event={event}
           onSuccess={() => setOpen(false)}
         />
@@ -76,36 +83,47 @@ function EventThemeForm({
 }) {
   const router = useRouter();
   const [isRestoring, setIsRestoring] = useState(false);
+  const isPersonalized = event.pageLayout === "personalized";
   const form = useForm<EventThemeFields>({
     resolver: zodResolver(eventThemeFormSchema),
     defaultValues: toThemeFormValues({
-      backgroundColor: event.backgroundColor,
+      backgroundColor1: event.backgroundColor1,
+      backgroundColor2: event.backgroundColor2,
       titleColor: event.titleColor,
-      buttonColor: event.buttonColor,
+      textColor: event.textColor,
     }),
   });
 
-  const backgroundColor = useWatch({
+  const backgroundColor1 = useWatch({
     control: form.control,
-    name: "backgroundColor",
+    name: "backgroundColor1",
+  });
+  const backgroundColor2 = useWatch({
+    control: form.control,
+    name: "backgroundColor2",
   });
   const titleColor = useWatch({
     control: form.control,
     name: "titleColor",
   });
-  const buttonColor = useWatch({
+  const textColor = useWatch({
     control: form.control,
-    name: "buttonColor",
+    name: "textColor",
   });
 
-  const effectiveBackground = backgroundColor || DEFAULT_BACKGROUND_COLOR;
+  const effectiveColor1 = backgroundColor1 || DEFAULT_BACKGROUND_COLOR_1;
+  const effectiveColor2 = backgroundColor2 || DEFAULT_BACKGROUND_COLOR_2;
   const effectiveTitle = titleColor || DEFAULT_TITLE_COLOR;
-  const effectiveButton = buttonColor || DEFAULT_BUTTON_COLOR;
-  const showContrastWarning = hasLowTitleContrast(
-    effectiveBackground,
-    effectiveTitle
-  );
-  const previewButtonText = buttonTextColor(effectiveButton);
+  const effectiveText = textColor || DEFAULT_TEXT_COLOR;
+  const contrastWarnings = isPersonalized
+    ? getContrastWarnings({
+        backgroundColor1: effectiveColor1,
+        backgroundColor2: effectiveColor2,
+        titleColor: effectiveTitle,
+        textColor: effectiveText,
+      })
+    : [];
+  const previewButtonText = buttonTextColor(effectiveColor1);
   const isSubmitting = form.formState.isSubmitting;
   const isBusy = isSubmitting || isRestoring;
 
@@ -113,16 +131,21 @@ function EventThemeForm({
     const result = await updateEventThemeAction(event.id, values);
 
     if (!result.success) {
-      if (result.errors?.backgroundColor) {
-        form.setError("backgroundColor", {
-          message: result.errors.backgroundColor[0],
+      if (result.errors?.backgroundColor1) {
+        form.setError("backgroundColor1", {
+          message: result.errors.backgroundColor1[0],
+        });
+      }
+      if (result.errors?.backgroundColor2) {
+        form.setError("backgroundColor2", {
+          message: result.errors.backgroundColor2[0],
         });
       }
       if (result.errors?.titleColor) {
         form.setError("titleColor", { message: result.errors.titleColor[0] });
       }
-      if (result.errors?.buttonColor) {
-        form.setError("buttonColor", { message: result.errors.buttonColor[0] });
+      if (result.errors?.textColor) {
+        form.setError("textColor", { message: result.errors.textColor[0] });
       }
       toast.error(result.message ?? "Não foi possível salvar. Tente de novo.");
       return;
@@ -134,22 +157,22 @@ function EventThemeForm({
   }
 
   async function handleRestoreDefault() {
-    form.reset({
-      backgroundColor: "",
-      titleColor: "",
-      buttonColor: "",
-    });
+    const previousValues = form.getValues();
+
+    form.reset(EMPTY_THEME_FIELDS);
     setIsRestoring(true);
 
     const result = await updateEventThemeAction(event.id, {
-      backgroundColor: null,
+      backgroundColor1: null,
+      backgroundColor2: null,
       titleColor: null,
-      buttonColor: null,
+      textColor: null,
     });
 
     setIsRestoring(false);
 
     if (!result.success) {
+      form.reset(previousValues);
       toast.error(result.message ?? "Não foi possível restaurar. Tente de novo.");
       return;
     }
@@ -163,37 +186,58 @@ function EventThemeForm({
       className="flex flex-col gap-6"
       onSubmit={form.handleSubmit(handleSubmit)}
     >
-      <FieldGroup className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+      <FieldGroup
+        className={cn(
+          "sm:grid sm:items-start sm:gap-4",
+          isPersonalized ? "sm:grid-cols-4" : "sm:grid-cols-2"
+        )}
+      >
         <ThemeColorField
           control={form.control}
-          name="backgroundColor"
-          label="Fundo"
-          inputId="theme-background"
-          fallback={DEFAULT_BACKGROUND_COLOR}
+          name="backgroundColor1"
+          label="Cor 1 (topo)"
+          inputId="theme-background-1"
+          fallback={DEFAULT_BACKGROUND_COLOR_1}
           disabled={isBusy}
         />
         <ThemeColorField
           control={form.control}
-          name="titleColor"
-          label="Título"
-          inputId="theme-title"
-          fallback={DEFAULT_TITLE_COLOR}
+          name="backgroundColor2"
+          label="Cor 2 (base)"
+          inputId="theme-background-2"
+          fallback={DEFAULT_BACKGROUND_COLOR_2}
           disabled={isBusy}
         />
-        <ThemeColorField
-          control={form.control}
-          name="buttonColor"
-          label="Botão"
-          inputId="theme-button"
-          fallback={DEFAULT_BUTTON_COLOR}
-          disabled={isBusy}
-        />
+        {isPersonalized ? (
+          <>
+            <ThemeColorField
+              control={form.control}
+              name="titleColor"
+              label="Título"
+              inputId="theme-title"
+              fallback={DEFAULT_TITLE_COLOR}
+              disabled={isBusy}
+            />
+            <ThemeColorField
+              control={form.control}
+              name="textColor"
+              label="Texto"
+              inputId="theme-text"
+              fallback={DEFAULT_TEXT_COLOR}
+              disabled={isBusy}
+            />
+          </>
+        ) : null}
       </FieldGroup>
 
-      {showContrastWarning ? (
-        <Alert>
-          <AlertDescription>{TITLE_CONTRAST_WARNING}</AlertDescription>
-        </Alert>
+      {contrastWarnings.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          {contrastWarnings.map((warning) => (
+            <Alert key={warning}>
+              <AlertDescription>{warning}</AlertDescription>
+            </Alert>
+          ))}
+        </div>
       ) : null}
 
       <div className="flex flex-col gap-2">
@@ -205,8 +249,9 @@ function EventThemeForm({
           eventDate={event.eventDate}
           eventTime={event.eventTime}
           location={event.location}
-          titleColor={titleColor || null}
-          backgroundColor={effectiveBackground}
+          titleColor={effectiveTitle}
+          textColor={effectiveText}
+          backgroundImage={backgroundGradient(effectiveColor1, effectiveColor2)}
           layout={event.pageLayout}
           imageUrl={
             event.hasIllustration
@@ -218,9 +263,9 @@ function EventThemeForm({
             <p
               className={cn(
                 "text-sm",
-                titleColor ? undefined : "text-muted-foreground"
+                isPersonalized ? undefined : "text-muted-foreground"
               )}
-              style={titleColor ? { color: titleColor } : undefined}
+              style={isPersonalized ? { color: effectiveText } : undefined}
             >
               Confirmação de presença
             </p>
@@ -236,7 +281,7 @@ function EventThemeForm({
             <Button
               type="button"
               tabIndex={-1}
-              style={buttonThemeStyle(buttonColor || null, previewButtonText)}
+              style={buttonThemeStyle(effectiveColor1, previewButtonText)}
             >
               confirmo
             </Button>

@@ -22,9 +22,10 @@ export type PainelEvent = {
   confirmationManuallyClosed: boolean;
   confirmation: ConfirmationResolution;
   confirmationMessage: string;
-  backgroundColor: string | null;
+  backgroundColor1: string | null;
+  backgroundColor2: string | null;
   titleColor: string | null;
-  buttonColor: string | null;
+  textColor: string | null;
   pageLayout: EventPageLayout;
   hasIllustration: boolean;
   updatedAt: string;
@@ -50,7 +51,7 @@ export async function getPainelEvent(eventId: number) {
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color, title_color, button_color, illustration_content_type, page_layout, updated_at"
+      "id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, illustration_content_type, page_layout, updated_at"
     )
     .eq("id", eventId)
     .maybeSingle();
@@ -79,9 +80,10 @@ export async function getPainelEvent(eventId: number) {
     confirmationManuallyClosed: data.confirmation_manually_closed,
     confirmation: resolved.confirmation,
     confirmationMessage: resolved.confirmationMessage,
-    backgroundColor: parseStoredColor(data.background_color),
+    backgroundColor1: parseStoredColor(data.background_color_1),
+    backgroundColor2: parseStoredColor(data.background_color_2),
     titleColor: parseStoredColor(data.title_color),
-    buttonColor: parseStoredColor(data.button_color),
+    textColor: parseStoredColor(data.text_color),
     pageLayout: parsePageLayout(data.page_layout),
     hasIllustration: Boolean(data.illustration_content_type),
     updatedAt: data.updated_at,

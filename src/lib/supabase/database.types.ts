@@ -13,9 +13,10 @@ export type Database = {
           confirmation_starts_on: string | null;
           confirmation_ends_on: string | null;
           confirmation_manually_closed: boolean;
-          background_color: string | null;
+          background_color_1: string | null;
+          background_color_2: string | null;
           title_color: string | null;
-          button_color: string | null;
+          text_color: string | null;
           illustration: string | null;
           illustration_content_type: string | null;
           page_layout: string;
@@ -33,9 +34,10 @@ export type Database = {
           confirmation_starts_on?: string | null;
           confirmation_ends_on?: string | null;
           confirmation_manually_closed?: boolean;
-          background_color?: string | null;
+          background_color_1?: string | null;
+          background_color_2?: string | null;
           title_color?: string | null;
-          button_color?: string | null;
+          text_color?: string | null;
           illustration?: string | null;
           illustration_content_type?: string | null;
           page_layout?: string;
@@ -53,9 +55,10 @@ export type Database = {
           confirmation_starts_on?: string | null;
           confirmation_ends_on?: string | null;
           confirmation_manually_closed?: boolean;
-          background_color?: string | null;
+          background_color_1?: string | null;
+          background_color_2?: string | null;
           title_color?: string | null;
-          button_color?: string | null;
+          text_color?: string | null;
           illustration?: string | null;
           illustration_content_type?: string | null;
           page_layout?: string;
