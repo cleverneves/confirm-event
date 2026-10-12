@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
 
+import { ImageOnlyContent } from "./image-only-content";
 import { EventIllustration } from "@/components/event-illustration";
 import { formatInviteDateTimeLine } from "@/lib/event-date";
 import {
   illustrationAspect,
   type EventPageLayout,
 } from "@/lib/event-illustration";
+import { DEFAULT_BLUR_LEVEL, type BackgroundMode } from "@/lib/event-theme";
 import { cn } from "@/lib/utils";
 
 export function PublicEventView({
@@ -19,6 +21,8 @@ export function PublicEventView({
   backgroundImage,
   imageUrl,
   layout = "personalized",
+  backgroundMode = "gradient",
+  blurLevel = DEFAULT_BLUR_LEVEL,
   variant = "page",
   children,
 }: {
@@ -35,6 +39,10 @@ export function PublicEventView({
   backgroundImage: string;
   imageUrl?: string | null;
   layout?: EventPageLayout;
+  /** Fundo do layout Somente imagem; nos demais layouts é ignorado. */
+  backgroundMode?: BackgroundMode;
+  /** Nível efetivo do desfoque (0 a 100), usado só no modo desfoque. */
+  blurLevel?: number;
   variant?: "page" | "preview";
   children: ReactNode;
 }) {
@@ -48,8 +56,8 @@ export function PublicEventView({
     <div
       className={
         isPreview
-          ? "overflow-hidden rounded-xl ring-1 ring-foreground/10"
-          : "flex min-h-full flex-1 flex-col"
+          ? "relative overflow-hidden rounded-xl ring-1 ring-foreground/10"
+          : "relative flex min-h-full flex-1 flex-col"
       }
       style={{ backgroundImage }}
     >
@@ -59,16 +67,30 @@ export function PublicEventView({
           isPreview ? "gap-8 px-4 py-8" : "gap-12 px-6 py-16"
         )}
       >
-        {imageUrl ? (
-          <EventIllustration
-            src={imageUrl}
-            alt={title}
-            aspect={illustrationAspect(layout)}
-          />
-        ) : null}
-
-        {isImageOnly ? null : (
+        {isImageOnly ? (
+          imageUrl ? (
+            <ImageOnlyContent
+              imageUrl={imageUrl}
+              alt={title}
+              backgroundMode={backgroundMode}
+              blurLevel={blurLevel}
+              isPreview={isPreview}
+            >
+              {children}
+            </ImageOnlyContent>
+          ) : (
+            children
+          )
+        ) : (
           <>
+            {imageUrl ? (
+              <EventIllustration
+                src={imageUrl}
+                alt={title}
+                aspect={illustrationAspect(layout)}
+              />
+            ) : null}
+
             <header className="flex flex-col gap-4 text-center">
               <h1
                 className={cn(
@@ -92,10 +114,10 @@ export function PublicEventView({
               </p>
               <p style={textStyle}>{location}</p>
             </section>
+
+            {children}
           </>
         )}
-
-        {children}
       </main>
     </div>
   );

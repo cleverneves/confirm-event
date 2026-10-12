@@ -23,10 +23,12 @@ export async function updateEventThemeAction(
   const validation = eventThemeSchema.safeParse(input);
 
   if (!validation.success) {
+    const errors = validation.error.flatten().fieldErrors;
+
     return {
       success: false,
-      errors: validation.error.flatten().fieldErrors,
-      message: "Informe uma cor válida.",
+      errors,
+      message: errors.blurLevel?.[0] ?? "Informe uma cor válida.",
     };
   }
 
@@ -50,6 +52,8 @@ export async function updateEventThemeAction(
       background_color_2: validation.data.backgroundColor2,
       title_color: validation.data.titleColor,
       text_color: validation.data.textColor,
+      background_mode: validation.data.backgroundMode,
+      blur_level: validation.data.blurLevel,
       updated_at: new Date().toISOString(),
     })
     .eq("id", eventId);
@@ -68,7 +72,9 @@ export async function updateEventThemeAction(
     validation.data.backgroundColor1 === null &&
     validation.data.backgroundColor2 === null &&
     validation.data.titleColor === null &&
-    validation.data.textColor === null;
+    validation.data.textColor === null &&
+    validation.data.backgroundMode === "gradient" &&
+    validation.data.blurLevel === null;
 
   return {
     success: true,

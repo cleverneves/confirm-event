@@ -7,7 +7,12 @@ import {
   parsePageLayout,
   type EventPageLayout,
 } from "@/lib/event-illustration";
-import { parseStoredColor } from "@/lib/event-theme";
+import {
+  parseBackgroundMode,
+  parseBlurLevel,
+  parseStoredColor,
+  type BackgroundMode,
+} from "@/lib/event-theme";
 
 export type PainelEvent = {
   id: number;
@@ -26,6 +31,8 @@ export type PainelEvent = {
   backgroundColor2: string | null;
   titleColor: string | null;
   textColor: string | null;
+  backgroundMode: BackgroundMode;
+  blurLevel: number | null;
   pageLayout: EventPageLayout;
   hasIllustration: boolean;
   updatedAt: string;
@@ -51,7 +58,7 @@ export async function getPainelEvent(eventId: number) {
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, illustration_content_type, page_layout, updated_at"
+      "id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, background_mode, blur_level, illustration_content_type, page_layout, updated_at"
     )
     .eq("id", eventId)
     .maybeSingle();
@@ -84,6 +91,8 @@ export async function getPainelEvent(eventId: number) {
     backgroundColor2: parseStoredColor(data.background_color_2),
     titleColor: parseStoredColor(data.title_color),
     textColor: parseStoredColor(data.text_color),
+    backgroundMode: parseBackgroundMode(data.background_mode),
+    blurLevel: parseBlurLevel(data.blur_level),
     pageLayout: parsePageLayout(data.page_layout),
     hasIllustration: Boolean(data.illustration_content_type),
     updatedAt: data.updated_at,

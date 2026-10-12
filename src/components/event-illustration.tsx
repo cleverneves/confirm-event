@@ -18,11 +18,14 @@ export function EventIllustration({
   alt,
   aspect = "banner",
   className,
+  onError,
 }: {
   src: string;
   alt: string;
   aspect?: IllustrationAspect;
   className?: string;
+  /** Chamado quando o arquivo não carrega. */
+  onError?: () => void;
 }) {
   const [isVisible, setIsVisible] = useState(true);
 
@@ -38,7 +41,10 @@ export function EventIllustration({
         src={src}
         alt={alt}
         className="size-full object-fill"
-        onError={() => setIsVisible(false)}
+        onError={() => {
+          setIsVisible(false);
+          onError?.();
+        }}
       />
     </div>
   );

@@ -14,6 +14,19 @@ export const TEXT_ON_TOP_CONTRAST_WARNING =
 export const TEXT_ON_BOTTOM_CONTRAST_WARNING =
   "O texto pode ficar difícil de ler sobre a cor de baixo. Você ainda pode salvar.";
 
+export const BACKGROUND_MODES = ["gradient", "blur"] as const;
+export type BackgroundMode = (typeof BACKGROUND_MODES)[number];
+export const DEFAULT_BACKGROUND_MODE: BackgroundMode = "gradient";
+
+export const MIN_BLUR_LEVEL = 0;
+export const MAX_BLUR_LEVEL = 100;
+/** Nível exibido quando o organizador ainda não escolheu um. */
+export const DEFAULT_BLUR_LEVEL = 70;
+/** A foto de fundo ocupa 130% da área visível (25% a 30% maior que a cobertura). */
+export const BLUR_BACKGROUND_SCALE_PERCENT = 130;
+/** Raio do desfoque por ponto percentual, em % do lado menor da área visível (cqmin). */
+export const BLUR_RADIUS_CQMIN_PER_LEVEL = 0.08;
+
 const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/;
 const STORED_HEX_PATTERN = /^#[0-9A-Fa-f]{6}$/;
 const CONTRAST_THRESHOLD = 4.5;
@@ -24,13 +37,23 @@ export type StoredEventTheme = {
   backgroundColor2: string | null;
   titleColor: string | null;
   textColor: string | null;
+  backgroundMode: BackgroundMode;
+  blurLevel: number | null;
 };
 
-export type EventThemeFields = {
+export type EventThemeColorFields = {
   backgroundColor1: string;
   backgroundColor2: string;
   titleColor: string;
   textColor: string;
+};
+
+export type EventThemeColorKey = keyof EventThemeColorFields;
+
+export type EventThemeFields = EventThemeColorFields & {
+  backgroundMode: BackgroundMode;
+  /** null = ainda não escolhido; a tela abre em DEFAULT_BLUR_LEVEL. */
+  blurLevel: number | null;
 };
 
 export type EventThemeFieldErrors = {
@@ -38,6 +61,8 @@ export type EventThemeFieldErrors = {
   backgroundColor2?: string[];
   titleColor?: string[];
   textColor?: string[];
+  backgroundMode?: string[];
+  blurLevel?: string[];
 };
 
 export type ResolvedEventTheme = {
@@ -45,6 +70,10 @@ export type ResolvedEventTheme = {
   backgroundColor2: string | null;
   titleColor: string | null;
   textColor: string | null;
+  backgroundMode: BackgroundMode;
+  blurLevel: number | null;
+  /** Nível usado na exibição do desfoque (70 quando não há nível salvo). */
+  effectiveBlurLevel: number;
   effectiveBackgroundColor1: string;
   effectiveBackgroundColor2: string;
   effectiveTitleColor: string;
@@ -69,12 +98,33 @@ const colorInput = z
     message: INVALID_COLOR_MESSAGE,
   });
 
-export const eventThemeSchema = z.object({
-  backgroundColor1: colorInput,
-  backgroundColor2: colorInput,
-  titleColor: colorInput,
-  textColor: colorInput,
-});
+const INVALID_BLUR_LEVEL_MESSAGE = "Informe um nível de desfoque de 0 a 100";
+
+const blurLevelInput = z
+  .number({ error: INVALID_BLUR_LEVEL_MESSAGE })
+  .int({ error: INVALID_BLUR_LEVEL_MESSAGE })
+  .min(MIN_BLUR_LEVEL, { error: INVALID_BLUR_LEVEL_MESSAGE })
+  .max(MAX_BLUR_LEVEL, { error: INVALID_BLUR_LEVEL_MESSAGE })
+  .nullable();
+
+export const eventThemeSchema = z
+  .object({
+    backgroundColor1: colorInput,
+    backgroundColor2: colorInput,
+    titleColor: colorInput,
+    textColor: colorInput,
+    backgroundMode: z.enum(BACKGROUND_MODES),
+    blurLevel: blurLevelInput,
+  })
+  .superRefine((value, context) => {
+    if (value.backgroundMode === "blur" && value.blurLevel === null) {
+      context.addIssue({
+        code: "custom",
+        path: ["blurLevel"],
+        message: INVALID_BLUR_LEVEL_MESSAGE,
+      });
+    }
+  });
 
 export type EventThemeInput = z.infer<typeof eventThemeSchema>;
 
@@ -91,7 +141,27 @@ export const eventThemeFormSchema = z.object({
   backgroundColor2: formColor,
   titleColor: formColor,
   textColor: formColor,
+  backgroundMode: z.enum(BACKGROUND_MODES),
+  blurLevel: blurLevelInput,
 });
+
+export function parseBackgroundMode(value: unknown): BackgroundMode {
+  return value === "blur" ? "blur" : DEFAULT_BACKGROUND_MODE;
+}
+
+/** Nível salvo válido (inteiro de 0 a 100) ou null. */
+export function parseBlurLevel(value: unknown): number | null {
+  if (
+    typeof value !== "number" ||
+    !Number.isInteger(value) ||
+    value < MIN_BLUR_LEVEL ||
+    value > MAX_BLUR_LEVEL
+  ) {
+    return null;
+  }
+
+  return value;
+}
 
 export function parseStoredColor(value: string | null | undefined) {
   if (!value || !STORED_HEX_PATTERN.test(value)) {
@@ -116,11 +186,16 @@ export function resolveEventTheme(stored: StoredEventTheme): ResolvedEventTheme 
   const effectiveBackgroundColor2 =
     backgroundColor2 ?? DEFAULT_BACKGROUND_COLOR_2;
 
+  const blurLevel = parseBlurLevel(stored.blurLevel);
+
   return {
     backgroundColor1,
     backgroundColor2,
     titleColor,
     textColor,
+    backgroundMode: parseBackgroundMode(stored.backgroundMode),
+    blurLevel,
+    effectiveBlurLevel: blurLevel ?? DEFAULT_BLUR_LEVEL,
     effectiveBackgroundColor1,
     effectiveBackgroundColor2,
     effectiveTitleColor: titleColor ?? DEFAULT_TITLE_COLOR,
@@ -142,6 +217,8 @@ export function toThemeFormValues(stored: StoredEventTheme): EventThemeFields {
     backgroundColor2: theme.backgroundColor2 ?? "",
     titleColor: theme.titleColor ?? "",
     textColor: theme.textColor ?? "",
+    backgroundMode: theme.backgroundMode,
+    blurLevel: theme.blurLevel,
   };
 }
 

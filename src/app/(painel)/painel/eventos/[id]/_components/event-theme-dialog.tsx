@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch, type Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PaletteIcon } from "lucide-react";
+import { ApertureIcon, PaintbrushIcon, PaletteIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { updateEventThemeAction } from "../_actions/update-event-theme";
@@ -27,7 +27,9 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import { Spinner } from "@/components/ui/spinner";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { eventIllustrationUrl } from "@/lib/event-illustration";
 import {
   backgroundGradient,
@@ -35,11 +37,16 @@ import {
   buttonThemeStyle,
   DEFAULT_BACKGROUND_COLOR_1,
   DEFAULT_BACKGROUND_COLOR_2,
+  DEFAULT_BLUR_LEVEL,
   DEFAULT_TEXT_COLOR,
   DEFAULT_TITLE_COLOR,
   eventThemeFormSchema,
   getContrastWarnings,
+  MAX_BLUR_LEVEL,
+  MIN_BLUR_LEVEL,
   toThemeFormValues,
+  type BackgroundMode,
+  type EventThemeColorKey,
   type EventThemeFields,
 } from "@/lib/event-theme";
 import { cn } from "@/lib/utils";
@@ -49,6 +56,8 @@ const EMPTY_THEME_FIELDS: EventThemeFields = {
   backgroundColor2: "",
   titleColor: "",
   textColor: "",
+  backgroundMode: "gradient",
+  blurLevel: null,
 };
 
 export function EventThemeDialog({ event }: { event: PainelEvent }) {
@@ -65,7 +74,7 @@ export function EventThemeDialog({ event }: { event: PainelEvent }) {
           <DialogTitle>Personalizar a página do evento</DialogTitle>
         </DialogHeader>
         <EventThemeForm
-          key={`${event.backgroundColor1 ?? ""}-${event.backgroundColor2 ?? ""}-${event.titleColor ?? ""}-${event.textColor ?? ""}-${event.pageLayout}`}
+          key={`${event.backgroundColor1 ?? ""}-${event.backgroundColor2 ?? ""}-${event.titleColor ?? ""}-${event.textColor ?? ""}-${event.backgroundMode}-${event.blurLevel ?? ""}-${event.pageLayout}`}
           event={event}
           onSuccess={() => setOpen(false)}
         />
@@ -84,6 +93,7 @@ function EventThemeForm({
   const router = useRouter();
   const [isRestoring, setIsRestoring] = useState(false);
   const isPersonalized = event.pageLayout === "personalized";
+  const isImageOnly = event.pageLayout === "image_only";
   const form = useForm<EventThemeFields>({
     resolver: zodResolver(eventThemeFormSchema),
     defaultValues: toThemeFormValues({
@@ -91,6 +101,8 @@ function EventThemeForm({
       backgroundColor2: event.backgroundColor2,
       titleColor: event.titleColor,
       textColor: event.textColor,
+      backgroundMode: event.backgroundMode,
+      blurLevel: event.blurLevel,
     }),
   });
 
@@ -111,6 +123,18 @@ function EventThemeForm({
     name: "textColor",
   });
 
+  const backgroundMode = useWatch({
+    control: form.control,
+    name: "backgroundMode",
+  });
+  const blurLevel = useWatch({
+    control: form.control,
+    name: "blurLevel",
+  });
+
+  // Modo e nível só valem no Somente imagem; nos demais layouts a página fica em gradiente.
+  const isBlurSelected = isImageOnly && backgroundMode === "blur";
+  const effectiveBlurLevel = blurLevel ?? DEFAULT_BLUR_LEVEL;
   const effectiveColor1 = backgroundColor1 || DEFAULT_BACKGROUND_COLOR_1;
   const effectiveColor2 = backgroundColor2 || DEFAULT_BACKGROUND_COLOR_2;
   const effectiveTitle = titleColor || DEFAULT_TITLE_COLOR;
@@ -128,9 +152,23 @@ function EventThemeForm({
   const isBusy = isSubmitting || isRestoring;
 
   async function handleSubmit(values: EventThemeFields) {
-    const result = await updateEventThemeAction(event.id, values);
+    const result = await updateEventThemeAction(event.id, {
+      backgroundColor1: values.backgroundColor1,
+      backgroundColor2: values.backgroundColor2,
+      titleColor: values.titleColor,
+      textColor: values.textColor,
+      backgroundMode: values.backgroundMode,
+      // Um nível ainda não escolhido é gravado como o que o deslize mostra (70%).
+      blurLevel:
+        values.backgroundMode === "blur"
+          ? (values.blurLevel ?? DEFAULT_BLUR_LEVEL)
+          : values.blurLevel,
+    });
 
     if (!result.success) {
+      if (result.errors?.blurLevel) {
+        form.setError("blurLevel", { message: result.errors.blurLevel[0] });
+      }
       if (result.errors?.backgroundColor1) {
         form.setError("backgroundColor1", {
           message: result.errors.backgroundColor1[0],
@@ -167,6 +205,8 @@ function EventThemeForm({
       backgroundColor2: null,
       titleColor: null,
       textColor: null,
+      backgroundMode: "gradient",
+      blurLevel: null,
     });
 
     setIsRestoring(false);
@@ -186,28 +226,41 @@ function EventThemeForm({
       className="flex flex-col gap-6"
       onSubmit={form.handleSubmit(handleSubmit)}
     >
+      {isImageOnly ? (
+        <BackgroundModeField
+          control={form.control}
+          mode={backgroundMode}
+          disabled={isBusy}
+          effectiveBlurLevel={effectiveBlurLevel}
+        />
+      ) : null}
+
       <FieldGroup
         className={cn(
           "sm:grid sm:items-start sm:gap-4",
           isPersonalized ? "sm:grid-cols-4" : "sm:grid-cols-2"
         )}
       >
-        <ThemeColorField
-          control={form.control}
-          name="backgroundColor1"
-          label="Cor 1 (topo)"
-          inputId="theme-background-1"
-          fallback={DEFAULT_BACKGROUND_COLOR_1}
-          disabled={isBusy}
-        />
-        <ThemeColorField
-          control={form.control}
-          name="backgroundColor2"
-          label="Cor 2 (base)"
-          inputId="theme-background-2"
-          fallback={DEFAULT_BACKGROUND_COLOR_2}
-          disabled={isBusy}
-        />
+        {isBlurSelected ? null : (
+          <>
+            <ThemeColorField
+              control={form.control}
+              name="backgroundColor1"
+              label="Cor 1 (topo)"
+              inputId="theme-background-1"
+              fallback={DEFAULT_BACKGROUND_COLOR_1}
+              disabled={isBusy}
+            />
+            <ThemeColorField
+              control={form.control}
+              name="backgroundColor2"
+              label="Cor 2 (base)"
+              inputId="theme-background-2"
+              fallback={DEFAULT_BACKGROUND_COLOR_2}
+              disabled={isBusy}
+            />
+          </>
+        )}
         {isPersonalized ? (
           <>
             <ThemeColorField
@@ -253,6 +306,8 @@ function EventThemeForm({
           textColor={effectiveText}
           backgroundImage={backgroundGradient(effectiveColor1, effectiveColor2)}
           layout={event.pageLayout}
+          backgroundMode={isBlurSelected ? "blur" : "gradient"}
+          blurLevel={effectiveBlurLevel}
           imageUrl={
             event.hasIllustration
               ? eventIllustrationUrl(event.slug, event.updatedAt)
@@ -308,6 +363,104 @@ function EventThemeForm({
   );
 }
 
+/**
+ * Escolha do fundo do layout Somente imagem: dois ícones exclusivos. O desfoque
+ * abre o deslize de nível; o gradiente deixa as cores visíveis.
+ */
+function BackgroundModeField({
+  control,
+  mode,
+  disabled,
+  effectiveBlurLevel,
+}: {
+  control: Control<EventThemeFields>;
+  mode: BackgroundMode;
+  disabled: boolean;
+  effectiveBlurLevel: number;
+}) {
+  return (
+    <FieldGroup>
+      <Controller
+        name="backgroundMode"
+        control={control}
+        render={({ field }) => (
+          <Field>
+            <FieldLabel id="theme-background-mode-label">Fundo</FieldLabel>
+            <ToggleGroup
+              variant="outline"
+              aria-labelledby="theme-background-mode-label"
+              value={[field.value]}
+              disabled={disabled}
+              onValueChange={(values) => {
+                const nextMode = values[0] as BackgroundMode | undefined;
+
+                // Um modo está sempre selecionado: clicar no ícone ativo não desmarca.
+                if (nextMode) {
+                  field.onChange(nextMode);
+                }
+              }}
+            >
+              <ToggleGroupItem
+                value="blur"
+                aria-label="Fundo com desfoque"
+                title="Fundo com desfoque"
+                className="data-pressed:bg-primary data-pressed:text-primary-foreground"
+              >
+                <ApertureIcon />
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="gradient"
+                aria-label="Fundo com gradiente"
+                title="Fundo com gradiente"
+                className="data-pressed:bg-primary data-pressed:text-primary-foreground"
+              >
+                <PaintbrushIcon />
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </Field>
+        )}
+      />
+
+      {mode === "blur" ? (
+        <Controller
+          name="blurLevel"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <div className="flex items-center justify-between gap-2">
+                <FieldLabel htmlFor="theme-blur-level">
+                  Nível do desfoque
+                </FieldLabel>
+                <span
+                  className="text-sm text-muted-foreground tabular-nums"
+                  aria-live="polite"
+                >
+                  {effectiveBlurLevel}%
+                </span>
+              </div>
+              <Slider
+                id="theme-blur-level"
+                min={MIN_BLUR_LEVEL}
+                max={MAX_BLUR_LEVEL}
+                step={1}
+                disabled={disabled}
+                value={[effectiveBlurLevel]}
+                aria-invalid={fieldState.invalid}
+                onValueChange={(value) =>
+                  field.onChange(Array.isArray(value) ? value[0] : value)
+                }
+              />
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : null}
+            </Field>
+          )}
+        />
+      ) : null}
+    </FieldGroup>
+  );
+}
+
 function ThemeColorField({
   control,
   name,
@@ -317,7 +470,7 @@ function ThemeColorField({
   disabled,
 }: {
   control: Control<EventThemeFields>;
-  name: keyof EventThemeFields;
+  name: EventThemeColorKey;
   label: string;
   inputId: string;
   fallback: string;

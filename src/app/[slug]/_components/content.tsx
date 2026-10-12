@@ -15,6 +15,8 @@ export function PublicContent({
     backgroundColor2: event.backgroundColor2,
     titleColor: event.titleColor,
     textColor: event.textColor,
+    backgroundMode: event.backgroundMode,
+    blurLevel: event.blurLevel,
   });
   const isPersonalized = event.pageLayout === "personalized";
 
@@ -30,6 +32,8 @@ export function PublicContent({
       backgroundImage={theme.backgroundImage}
       imageUrl={event.imageUrl}
       layout={event.pageLayout}
+      backgroundMode={theme.backgroundMode}
+      blurLevel={theme.effectiveBlurLevel}
     >
       <ConfirmationSection
         slug={slug}

@@ -4,7 +4,12 @@ import {
   parsePageLayout,
   type EventPageLayout,
 } from "@/lib/event-illustration";
-import { parseStoredColor } from "@/lib/event-theme";
+import {
+  parseBackgroundMode,
+  parseBlurLevel,
+  parseStoredColor,
+  type BackgroundMode,
+} from "@/lib/event-theme";
 import { createClient } from "@/lib/supabase/server";
 
 export type PublicEvent = {
@@ -20,6 +25,8 @@ export type PublicEvent = {
   backgroundColor2: string | null;
   titleColor: string | null;
   textColor: string | null;
+  backgroundMode: BackgroundMode;
+  blurLevel: number | null;
   pageLayout: EventPageLayout;
   imageUrl: string | null;
 };
@@ -29,7 +36,7 @@ export async function getPublicEvent(slug: string) {
   const { data, error } = await supabase
     .from("event_slugs")
     .select(
-      "slug, events(id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, illustration_content_type, page_layout, updated_at)"
+      "slug, events(id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, background_mode, blur_level, illustration_content_type, page_layout, updated_at)"
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -64,6 +71,8 @@ export async function getPublicEvent(slug: string) {
     backgroundColor2: parseStoredColor(event.background_color_2),
     titleColor: parseStoredColor(event.title_color),
     textColor: parseStoredColor(event.text_color),
+    backgroundMode: parseBackgroundMode(event.background_mode),
+    blurLevel: parseBlurLevel(event.blur_level),
     pageLayout: parsePageLayout(event.page_layout),
     imageUrl: event.illustration_content_type
       ? eventIllustrationUrl(event.slug, event.updated_at)

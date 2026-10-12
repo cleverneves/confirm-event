@@ -20,6 +20,8 @@ export type Database = {
           illustration: string | null;
           illustration_content_type: string | null;
           page_layout: string;
+          background_mode: string;
+          blur_level: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -41,6 +43,8 @@ export type Database = {
           illustration?: string | null;
           illustration_content_type?: string | null;
           page_layout?: string;
+          background_mode?: string;
+          blur_level?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -62,6 +66,8 @@ export type Database = {
           illustration?: string | null;
           illustration_content_type?: string | null;
           page_layout?: string;
+          background_mode?: string;
+          blur_level?: number | null;
           created_at?: string;
           updated_at?: string;
         };
