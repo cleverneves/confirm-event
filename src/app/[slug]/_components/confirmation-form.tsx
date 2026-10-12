@@ -7,6 +7,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { confirmPresenceAction } from "../_actions/confirm-presence";
+import {
+  ConfirmationCard,
+  ConfirmationCardTitle,
+  ConfirmationThanks,
+  ConfirmationUnavailable,
+  ConfirmButtonContent,
+} from "./confirmation-card";
 import { useReportSoldOut } from "./sold-out-boundary";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -17,15 +24,19 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
 import { buttonThemeStyle } from "@/lib/event-theme";
-import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   fullName: z.string().trim().min(1, "Informe o nome completo"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+/**
+ * Estado da confirmação nesta visita. O agradecimento vale só até recarregar a
+ * página: nada é guardado no navegador.
+ */
+type ConfirmationStatus = "form" | "unavailable" | "thanks";
 
 export function ConfirmationSection({
   slug,
@@ -43,30 +54,29 @@ export function ConfirmationSection({
 }) {
   const router = useRouter();
   const reportSoldOut = useReportSoldOut();
-  const [isUnavailable, setIsUnavailable] = useState(!acceptsConfirmation);
-
-  if (isUnavailable) {
-    return <ConfirmationUnavailable />;
-  }
-
-  return (
-    <ConfirmationForm
-      slug={slug}
-      buttonColor={buttonColor}
-      buttonTextColor={buttonTextColor}
-      textColor={textColor}
-      onUnavailable={() => {
-        setIsUnavailable(true);
-        router.refresh();
-      }}
-      onSoldOut={reportSoldOut}
-    />
+  const [status, setStatus] = useState<ConfirmationStatus>(
+    acceptsConfirmation ? "form" : "unavailable"
   );
-}
 
-function ConfirmationUnavailable() {
   return (
-    <p className="text-center font-heading text-xl">Confirmação indisponível</p>
+    <ConfirmationCard>
+      {status === "unavailable" ? <ConfirmationUnavailable /> : null}
+      {status === "thanks" ? <ConfirmationThanks /> : null}
+      {status === "form" ? (
+        <ConfirmationForm
+          slug={slug}
+          buttonColor={buttonColor}
+          buttonTextColor={buttonTextColor}
+          textColor={textColor}
+          onConfirmed={() => setStatus("thanks")}
+          onUnavailable={() => {
+            setStatus("unavailable");
+            router.refresh();
+          }}
+          onSoldOut={reportSoldOut}
+        />
+      ) : null}
+    </ConfirmationCard>
   );
 }
 
@@ -75,6 +85,7 @@ function ConfirmationForm({
   buttonColor,
   buttonTextColor,
   textColor,
+  onConfirmed,
   onUnavailable,
   onSoldOut,
 }: {
@@ -82,12 +93,11 @@ function ConfirmationForm({
   buttonColor: string;
   buttonTextColor: string;
   textColor: string | null;
+  onConfirmed: () => void;
   onUnavailable: () => void;
   onSoldOut: () => void;
 }) {
   const [formError, setFormError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [canConfirmAnother, setCanConfirmAnother] = useState(true);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -97,7 +107,6 @@ function ConfirmationForm({
 
   async function handleSubmit(values: FormValues) {
     setFormError(null);
-    setSuccessMessage(null);
 
     const result = await confirmPresenceAction({
       slug,
@@ -123,9 +132,7 @@ function ConfirmationForm({
       return;
     }
 
-    setSuccessMessage(result.message ?? "Presença confirmada.");
-    setCanConfirmAnother(result.canConfirmAnother ?? true);
-    form.reset({ fullName: "" });
+    onConfirmed();
   }
 
   /**
@@ -143,18 +150,6 @@ function ConfirmationForm({
       className="flex flex-col gap-6"
       onSubmit={form.handleSubmit(handleSubmit, handleInvalidSubmit)}
     >
-      {successMessage ? (
-        <Alert>
-          <AlertTitle>Presença confirmada</AlertTitle>
-          <AlertDescription>
-            {successMessage}
-            {canConfirmAnother
-              ? " Você pode confirmar outra pessoa neste mesmo evento."
-              : null}
-          </AlertDescription>
-        </Alert>
-      ) : null}
-
       {formError ? (
         <Alert variant="destructive">
           <AlertTitle>Não foi possível confirmar</AlertTitle>
@@ -163,12 +158,7 @@ function ConfirmationForm({
       ) : null}
 
       <FieldGroup>
-        <p
-          className={cn("text-sm", textColor ? undefined : "text-muted-foreground")}
-          style={textColor ? { color: textColor } : undefined}
-        >
-          Confirmação de presença
-        </p>
+        <ConfirmationCardTitle textColor={textColor} />
         <Controller
           name="fullName"
           control={form.control}
@@ -192,8 +182,7 @@ function ConfirmationForm({
           disabled={isSubmitting}
           style={buttonThemeStyle(buttonColor, buttonTextColor)}
         >
-          {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
-          confirmo
+          <ConfirmButtonContent isSubmitting={isSubmitting} />
         </Button>
       </FieldGroup>
     </form>

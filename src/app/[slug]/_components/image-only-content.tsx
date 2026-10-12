@@ -18,9 +18,9 @@ import { cn } from "@/lib/utils";
 
 /**
  * Conteúdo do layout Somente imagem: arte nítida e confirmação, com a foto do
- * evento ampliada e desfocada atrás quando o fundo é o desfoque. Se a imagem não
- * carregar, a arte, o fundo desfocado e a superfície clara somem e a página fica
- * no gradiente.
+ * evento ampliada e desfocada atrás quando o fundo é o desfoque. A confirmação
+ * (`children`) traz o próprio card. Se a imagem não carregar, a arte e o fundo
+ * desfocado somem e a página fica no gradiente.
  */
 export function ImageOnlyContent({
   imageUrl,
@@ -69,13 +69,7 @@ export function ImageOnlyContent({
         onError={handleImageError}
       />
 
-      {hasBlurBackground ? (
-        <div className="relative rounded-xl bg-card p-6 text-card-foreground shadow-panel ring-1 ring-foreground/10">
-          {children}
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </>
   );
 }

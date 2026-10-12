@@ -72,13 +72,18 @@ export function formatInviteTime(eventTime: string) {
   return `às ${hours}h${formattedMinutes}`;
 }
 
-/** Linha do convite: "Sábado | 07/11 | às 14h". */
-export function formatInviteDateTimeLine(eventDate: string, eventTime: string) {
+/** Trechos da linha do convite, na ordem: dia da semana, data curta e horário. */
+export function formatInviteDateTimeParts(eventDate: string, eventTime: string) {
   return [
     formatInviteWeekday(eventDate),
     formatInviteShortDate(eventDate),
     formatInviteTime(eventTime),
-  ].join(" | ");
+  ];
+}
+
+/** Linha do convite: "Sábado | 07/11 | às 14h". */
+export function formatInviteDateTimeLine(eventDate: string, eventTime: string) {
+  return formatInviteDateTimeParts(eventDate, eventTime).join(" | ");
 }
 
 export function formatConfirmationDateTime(iso: string) {

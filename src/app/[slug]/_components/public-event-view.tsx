@@ -1,8 +1,8 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
 import { ImageOnlyContent } from "./image-only-content";
 import { EventIllustration } from "@/components/event-illustration";
-import { formatInviteDateTimeLine } from "@/lib/event-date";
+import { formatInviteDateTimeParts } from "@/lib/event-date";
 import {
   illustrationAspect,
   type EventPageLayout,
@@ -109,8 +109,18 @@ export function PublicEventView({
             </header>
 
             <section className="flex flex-col items-center gap-2 border-y border-border py-6 text-center font-heading text-lg">
-              <p style={textStyle}>
-                {formatInviteDateTimeLine(eventDate, eventTime)}
+              <p
+                className="flex flex-wrap items-center justify-center gap-x-3 text-xl sm:gap-x-4 sm:text-2xl"
+                style={textStyle}
+              >
+                {formatInviteDateTimeParts(eventDate, eventTime).map(
+                  (part, index) => (
+                    <Fragment key={part}>
+                      {index > 0 ? <span aria-hidden="true">|</span> : null}
+                      <span>{part}</span>
+                    </Fragment>
+                  )
+                )}
               </p>
               <p style={textStyle}>{location}</p>
             </section>

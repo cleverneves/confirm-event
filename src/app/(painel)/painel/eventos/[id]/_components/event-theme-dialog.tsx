@@ -9,6 +9,11 @@ import { toast } from "sonner";
 
 import { updateEventThemeAction } from "../_actions/update-event-theme";
 import type { PainelEvent } from "../_data-access/get-event";
+import {
+  ConfirmationCard,
+  ConfirmationCardTitle,
+  ConfirmButtonContent,
+} from "@/app/[slug]/_components/confirmation-card";
 import { PublicEventView } from "@/app/[slug]/_components/public-event-view";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -314,33 +319,31 @@ function EventThemeForm({
               : null
           }
         >
-          <FieldGroup>
-            <p
-              className={cn(
-                "text-sm",
-                isPersonalized ? undefined : "text-muted-foreground"
-              )}
-              style={isPersonalized ? { color: effectiveText } : undefined}
-            >
-              Confirmação de presença
-            </p>
-            <Field>
-              <FieldLabel htmlFor="theme-preview-name">Nome completo</FieldLabel>
-              <Input
-                id="theme-preview-name"
-                readOnly
-                tabIndex={-1}
-                autoComplete="off"
+          <ConfirmationCard>
+            <FieldGroup>
+              <ConfirmationCardTitle
+                textColor={isPersonalized ? effectiveText : null}
               />
-            </Field>
-            <Button
-              type="button"
-              tabIndex={-1}
-              style={buttonThemeStyle(effectiveColor1, previewButtonText)}
-            >
-              confirmo
-            </Button>
-          </FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="theme-preview-name">
+                  Nome completo
+                </FieldLabel>
+                <Input
+                  id="theme-preview-name"
+                  readOnly
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+              </Field>
+              <Button
+                type="button"
+                tabIndex={-1}
+                style={buttonThemeStyle(effectiveColor1, previewButtonText)}
+              >
+                <ConfirmButtonContent />
+              </Button>
+            </FieldGroup>
+          </ConfirmationCard>
         </PublicEventView>
       </div>
 
