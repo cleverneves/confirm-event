@@ -40,6 +40,11 @@ export function parsePageLayout(value: unknown): EventPageLayout {
   return "personalized";
 }
 
+/** Nome visível do layout da página pública. */
+export function pageLayoutLabel(layout: EventPageLayout) {
+  return layout === "image_only" ? "Somente imagem" : "Personalizado";
+}
+
 export function illustrationAspect(layout: EventPageLayout): IllustrationAspect {
   return layout === "image_only" ? "portrait" : "banner";
 }

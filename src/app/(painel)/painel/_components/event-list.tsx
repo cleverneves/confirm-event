@@ -3,7 +3,7 @@ import { MapPinIcon } from "lucide-react";
 
 import type { EventListItem } from "../_data-access/get-events";
 import { EventIllustration } from "@/components/event-illustration";
-import { Badge } from "@/components/ui/badge";
+import { ConfirmationStatusBadge } from "./confirmation-status-badge";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -13,7 +13,12 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { formatEventDate, formatEventTime } from "@/lib/event-date";
-import { illustrationAspect } from "@/lib/event-illustration";
+import { illustrationAspect, pageLayoutLabel } from "@/lib/event-illustration";
+import { cn } from "@/lib/utils";
+
+function formatConfirmedCount(total: number) {
+  return total === 1 ? "1 confirmado" : `${total} confirmados`;
+}
 
 export function EventList({ events }: { events: EventListItem[] }) {
   if (events.length === 0) {
@@ -42,21 +47,37 @@ export function EventList({ events }: { events: EventListItem[] }) {
             href={`/painel/eventos/${event.id}`}
             className="flex flex-col gap-3 rounded-lg bg-card p-5 shadow-panel ring-1 ring-muted-foreground/20 transition-shadow hover:shadow-elevated"
           >
-            {event.imageUrl ? (
-              <EventIllustration
-                src={event.imageUrl}
-                alt={event.title}
-                aspect={illustrationAspect(event.pageLayout)}
-              />
-            ) : null}
+            <div className="flex items-center gap-3">
+              {event.imageUrl ? (
+                <EventIllustration
+                  src={event.imageUrl}
+                  alt=""
+                  aspect={illustrationAspect(event.pageLayout)}
+                  className={cn(
+                    "shrink-0 rounded-sm",
+                    event.pageLayout === "image_only" ? "w-9" : "w-24"
+                  )}
+                />
+              ) : null}
+              <p className="text-sm font-medium text-muted-foreground">
+                {pageLayoutLabel(event.pageLayout)}
+              </p>
+            </div>
             <div className="flex items-start justify-between gap-3">
               <p className="font-heading text-xl leading-none tracking-tight">
                 {event.title}
               </p>
-              <Badge variant={event.confirmationOpen ? "default" : "secondary"}>
-                {event.confirmationOpen ? "Aberta" : "Encerrada"}
-              </Badge>
+              <ConfirmationStatusBadge isOpen={event.confirmationOpen} />
             </div>
+            {event.confirmedCount === null ? (
+              <p className="text-sm text-muted-foreground">
+                Quantidade indisponível
+              </p>
+            ) : (
+              <p className="text-sm font-medium text-success">
+                {formatConfirmedCount(event.confirmedCount)}
+              </p>
+            )}
             <p className="text-sm text-muted-foreground">
               {formatEventDate(event.eventDate)} · {formatEventTime(event.eventTime)}
             </p>

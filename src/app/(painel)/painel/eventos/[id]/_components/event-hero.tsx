@@ -6,7 +6,7 @@ import { EventEditDialog } from "./event-edit-dialog";
 import { EventLink } from "./event-link";
 import { EventThemeDialog } from "./event-theme-dialog";
 import type { PainelEvent } from "../_data-access/get-event";
-import { Badge } from "@/components/ui/badge";
+import { ConfirmationStatusBadge } from "../../../_components/confirmation-status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatEventDate, formatEventTime } from "@/lib/event-date";
 
@@ -33,13 +33,9 @@ export function EventHero({ event }: { event: PainelEvent }) {
                 <h1 className="font-heading text-3xl leading-tight tracking-tight">
                   {event.title}
                 </h1>
-                <Badge
-                  variant={
-                    event.confirmation.status === "open" ? "default" : "secondary"
-                  }
-                >
-                  {event.confirmation.status === "open" ? "Aberta" : "Encerrada"}
-                </Badge>
+                <ConfirmationStatusBadge
+                  isOpen={event.confirmation.status === "open"}
+                />
               </div>
               <p className="flex items-center gap-2 text-muted-foreground [&_svg]:size-4">
                 <MapPinIcon />
