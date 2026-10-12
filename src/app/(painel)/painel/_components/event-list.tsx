@@ -16,8 +16,12 @@ import { formatEventDate, formatEventTime } from "@/lib/event-date";
 import { illustrationAspect, pageLayoutLabel } from "@/lib/event-illustration";
 import { cn } from "@/lib/utils";
 
-function formatConfirmedCount(total: number) {
-  return total === 1 ? "1 confirmado" : `${total} confirmados`;
+function formatConfirmedCount(total: number, maxGuestCapacity: number | null) {
+  const confirmed = total === 1 ? "1 confirmado" : `${total} confirmados`;
+
+  return maxGuestCapacity === null
+    ? confirmed
+    : `${confirmed} de ${maxGuestCapacity}`;
 }
 
 export function EventList({ events }: { events: EventListItem[] }) {
@@ -75,7 +79,10 @@ export function EventList({ events }: { events: EventListItem[] }) {
               </p>
             ) : (
               <p className="text-sm font-medium text-success">
-                {formatConfirmedCount(event.confirmedCount)}
+                {formatConfirmedCount(
+                  event.confirmedCount,
+                  event.maxGuestCapacity
+                )}
               </p>
             )}
             <p className="text-sm text-muted-foreground">

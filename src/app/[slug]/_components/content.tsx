@@ -1,5 +1,6 @@
 import { ConfirmationSection } from "./confirmation-form";
 import { PublicEventView } from "./public-event-view";
+import { SoldOutBoundary } from "./sold-out-boundary";
 import type { PublicEvent } from "../_data-access/get-event-by-slug";
 import { resolveEventTheme } from "@/lib/event-theme";
 
@@ -21,28 +22,43 @@ export function PublicContent({
   const isPersonalized = event.pageLayout === "personalized";
 
   return (
-    <PublicEventView
-      title={event.title}
-      details={event.details}
-      eventDate={event.eventDate}
-      eventTime={event.eventTime}
-      location={event.location}
-      titleColor={theme.effectiveTitleColor}
-      textColor={theme.effectiveTextColor}
-      backgroundImage={theme.backgroundImage}
-      imageUrl={event.imageUrl}
-      layout={event.pageLayout}
-      backgroundMode={theme.backgroundMode}
-      blurLevel={theme.effectiveBlurLevel}
+    <SoldOutBoundary
+      initialSoldOut={event.isSoldOut}
+      soldOutMessage={<SoldOutEvent title={event.title} />}
     >
-      <ConfirmationSection
-        slug={slug}
-        acceptsConfirmation={event.acceptsConfirmation}
-        buttonColor={theme.buttonColor}
-        buttonTextColor={theme.buttonTextColor}
-        textColor={isPersonalized ? theme.effectiveTextColor : null}
-      />
-    </PublicEventView>
+      <PublicEventView
+        title={event.title}
+        details={event.details}
+        eventDate={event.eventDate}
+        eventTime={event.eventTime}
+        location={event.location}
+        titleColor={theme.effectiveTitleColor}
+        textColor={theme.effectiveTextColor}
+        backgroundImage={theme.backgroundImage}
+        imageUrl={event.imageUrl}
+        layout={event.pageLayout}
+        backgroundMode={theme.backgroundMode}
+        blurLevel={theme.effectiveBlurLevel}
+      >
+        <ConfirmationSection
+          slug={slug}
+          acceptsConfirmation={event.acceptsConfirmation}
+          buttonColor={theme.buttonColor}
+          buttonTextColor={theme.buttonTextColor}
+          textColor={isPersonalized ? theme.effectiveTextColor : null}
+        />
+      </PublicEventView>
+    </SoldOutBoundary>
+  );
+}
+
+export function SoldOutEvent({ title }: { title: string }) {
+  return (
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-6 py-16 text-center">
+      <p className="font-heading text-2xl leading-snug">
+        Convites esgotados para o evento {title}. Agradecemos pelo seu interesse.
+      </p>
+    </main>
   );
 }
 

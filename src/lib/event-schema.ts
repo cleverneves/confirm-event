@@ -7,6 +7,11 @@ import { isValidSlug, normalizeSlug } from "@/lib/slug";
 const WINDOW_PAIR_MESSAGE =
   "Informe o início e o fim da janela, ou deixe os dois vazios.";
 
+export const INVALID_CAPACITY_MESSAGE = "Informe um número inteiro a partir de 1";
+
+/** Maior valor aceito pela coluna `integer` do Postgres. */
+const MAX_CAPACITY_COLUMN_VALUE = 2_147_483_647;
+
 const eventFieldsObject = z.object({
   title: z.string().trim().min(1, "Informe o título"),
   details: z.string(),
@@ -15,17 +20,21 @@ const eventFieldsObject = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe um dia válido"),
   eventTime: z.string().regex(/^\d{2}:\d{2}$/, "Informe um horário válido"),
   location: z.string().trim().min(1, "Informe o local"),
+  maxGuestCapacity: z.string(),
   layout: z.enum(PAGE_LAYOUTS),
   confirmationStartsOn: z.string(),
   confirmationEndsOn: z.string(),
 });
 
-export const eventFieldsSchema =
-  eventFieldsObject.superRefine(refineConfirmationWindow);
+export const eventFieldsSchema = eventFieldsObject.superRefine((data, ctx) => {
+  refineConfirmationWindow(data, ctx);
+  refineMaxGuestCapacity(data, ctx);
+});
 
 export function makeEventFieldsSchema(currentDate?: string) {
   return eventFieldsObject.superRefine((data, ctx) => {
     refineConfirmationWindow(data, ctx);
+    refineMaxGuestCapacity(data, ctx);
 
     if (currentDate && data.eventDate === currentDate) {
       return;
@@ -60,6 +69,7 @@ export type EventFieldErrors = {
   eventDate?: string[];
   eventTime?: string[];
   location?: string[];
+  maxGuestCapacity?: string[];
   layout?: string[];
   confirmationStartsOn?: string[];
   confirmationEndsOn?: string[];
@@ -73,6 +83,7 @@ export function eventFieldsFromFormData(formData: FormData): EventFields {
     eventDate: String(formData.get("eventDate") ?? ""),
     eventTime: String(formData.get("eventTime") ?? ""),
     location: String(formData.get("location") ?? ""),
+    maxGuestCapacity: String(formData.get("maxGuestCapacity") ?? ""),
     layout: String(formData.get("layout") ?? "") as EventFields["layout"],
     confirmationStartsOn: String(formData.get("confirmationStartsOn") ?? ""),
     confirmationEndsOn: String(formData.get("confirmationEndsOn") ?? ""),
@@ -87,6 +98,53 @@ export function confirmationWindowColumns(data: EventFields) {
     confirmation_starts_on: startsOn === "" ? null : startsOn,
     confirmation_ends_on: endsOn === "" ? null : endsOn,
   };
+}
+
+/**
+ * Converte o texto do campo de capacidade em inteiro.
+ * Vazio ou só espaços significa sem limite (`null`); valor inválido devolve `undefined`.
+ */
+function parseMaxGuestCapacity(value: string): number | null | undefined {
+  const trimmed = value.trim();
+
+  if (trimmed === "") {
+    return null;
+  }
+
+  if (!/^\d+$/.test(trimmed)) {
+    return undefined;
+  }
+
+  const capacity = Number(trimmed);
+
+  if (
+    !Number.isSafeInteger(capacity) ||
+    capacity < 1 ||
+    capacity > MAX_CAPACITY_COLUMN_VALUE
+  ) {
+    return undefined;
+  }
+
+  return capacity;
+}
+
+export function maxGuestCapacityColumn(data: EventFields) {
+  return {
+    max_guest_capacity: parseMaxGuestCapacity(data.maxGuestCapacity) ?? null,
+  };
+}
+
+function refineMaxGuestCapacity(
+  data: z.infer<typeof eventFieldsObject>,
+  ctx: z.RefinementCtx
+) {
+  if (parseMaxGuestCapacity(data.maxGuestCapacity) === undefined) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["maxGuestCapacity"],
+      message: INVALID_CAPACITY_MESSAGE,
+    });
+  }
 }
 
 function refineConfirmationWindow(

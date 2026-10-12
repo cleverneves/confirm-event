@@ -14,6 +14,7 @@ import {
   confirmationWindowColumns,
   eventFieldsFromFormData,
   eventFieldsSchema,
+  maxGuestCapacityColumn,
   type EventFieldErrors,
 } from "@/lib/event-schema";
 
@@ -95,6 +96,7 @@ export async function updateEventAction(
       event_date: validation.data.eventDate,
       event_time: validation.data.eventTime,
       location: validation.data.location,
+      ...maxGuestCapacityColumn(validation.data),
       confirmation_starts_on: window.confirmation_starts_on,
       confirmation_ends_on: window.confirmation_ends_on,
       page_layout: resolved.pageLayout,

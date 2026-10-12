@@ -22,6 +22,7 @@ export type Database = {
           page_layout: string;
           background_mode: string;
           blur_level: number | null;
+          max_guest_capacity: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -45,6 +46,7 @@ export type Database = {
           page_layout?: string;
           background_mode?: string;
           blur_level?: number | null;
+          max_guest_capacity?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -68,6 +70,7 @@ export type Database = {
           page_layout?: string;
           background_mode?: string;
           blur_level?: number | null;
+          max_guest_capacity?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -158,6 +161,10 @@ export type Database = {
       confirmation_accepts_name: {
         Args: { p_event_id: number };
         Returns: boolean;
+      };
+      event_confirmed_count: {
+        Args: { p_event_id: number };
+        Returns: number;
       };
     };
     Enums: Record<string, never>;

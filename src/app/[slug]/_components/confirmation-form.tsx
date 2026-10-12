@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { confirmPresenceAction } from "../_actions/confirm-presence";
+import { useReportSoldOut } from "./sold-out-boundary";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +42,7 @@ export function ConfirmationSection({
   textColor: string | null;
 }) {
   const router = useRouter();
+  const reportSoldOut = useReportSoldOut();
   const [isUnavailable, setIsUnavailable] = useState(!acceptsConfirmation);
 
   if (isUnavailable) {
@@ -57,6 +59,7 @@ export function ConfirmationSection({
         setIsUnavailable(true);
         router.refresh();
       }}
+      onSoldOut={reportSoldOut}
     />
   );
 }
@@ -73,15 +76,18 @@ function ConfirmationForm({
   buttonTextColor,
   textColor,
   onUnavailable,
+  onSoldOut,
 }: {
   slug: string;
   buttonColor: string;
   buttonTextColor: string;
   textColor: string | null;
   onUnavailable: () => void;
+  onSoldOut: () => void;
 }) {
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [canConfirmAnother, setCanConfirmAnother] = useState(true);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -98,6 +104,11 @@ function ConfirmationForm({
       fullName: values.fullName,
     });
 
+    if (result.soldOut) {
+      onSoldOut();
+      return;
+    }
+
     if (result.unavailable) {
       onUnavailable();
       return;
@@ -106,24 +117,40 @@ function ConfirmationForm({
     if (!result.success) {
       if (result.errors?.fullName) {
         form.setError("fullName", { message: result.errors.fullName[0] });
+        return;
       }
       setFormError(result.message ?? "Não foi possível confirmar. Tente de novo.");
       return;
     }
 
     setSuccessMessage(result.message ?? "Presença confirmada.");
+    setCanConfirmAnother(result.canConfirmAnother ?? true);
     form.reset({ fullName: "" });
+  }
+
+  /**
+   * Nome inválido também vai ao servidor: sem vaga, a tela de esgotado prevalece
+   * sobre o erro de nome; com vaga, o servidor devolve o mesmo erro do formulário.
+   */
+  async function handleInvalidSubmit() {
+    await handleSubmit(form.getValues());
   }
 
   const isSubmitting = form.formState.isSubmitting;
 
   return (
-    <form className="flex flex-col gap-6" onSubmit={form.handleSubmit(handleSubmit)}>
+    <form
+      className="flex flex-col gap-6"
+      onSubmit={form.handleSubmit(handleSubmit, handleInvalidSubmit)}
+    >
       {successMessage ? (
         <Alert>
           <AlertTitle>Presença confirmada</AlertTitle>
           <AlertDescription>
-            {successMessage} Você pode confirmar outra pessoa neste mesmo evento.
+            {successMessage}
+            {canConfirmAnother
+              ? " Você pode confirmar outra pessoa neste mesmo evento."
+              : null}
           </AlertDescription>
         </Alert>
       ) : null}

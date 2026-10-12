@@ -13,6 +13,8 @@ export type EventListItem = {
   eventTime: string;
   location: string;
   slug: string;
+  /** Capacidade máxima de convidados; nulo significa sem limite. */
+  maxGuestCapacity: number | null;
   confirmationOpen: boolean;
   pageLayout: EventPageLayout;
   imageUrl: string | null;
@@ -49,7 +51,7 @@ export async function getEvents() {
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id, title, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, illustration_content_type, page_layout, updated_at"
+      "id, title, event_date, event_time, location, slug, max_guest_capacity, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, illustration_content_type, page_layout, updated_at"
     )
     .order("event_date", { ascending: true })
     .order("title", { ascending: true });
@@ -83,6 +85,7 @@ export async function getEvents() {
         eventTime: event.event_time,
         location: event.location,
         slug: event.slug,
+        maxGuestCapacity: event.max_guest_capacity,
         confirmationOpen: confirmation.status === "open",
         pageLayout: parsePageLayout(event.page_layout),
         imageUrl: event.illustration_content_type

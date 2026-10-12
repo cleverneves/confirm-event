@@ -21,6 +21,8 @@ export type PublicEvent = {
   location: string;
   currentSlug: string;
   acceptsConfirmation: boolean;
+  /** Confirmação aberta e total de confirmados na capacidade ou acima dela. */
+  isSoldOut: boolean;
   backgroundColor1: string | null;
   backgroundColor2: string | null;
   titleColor: string | null;
@@ -31,12 +33,39 @@ export type PublicEvent = {
   imageUrl: string | null;
 };
 
+type PublicSupabase = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * Indica se o total de confirmados já alcançou a capacidade.
+ * Sem capacidade, ou se o total não puder ser obtido, o evento não é tratado como lotado:
+ * o envio consulta a vaga de novo no servidor.
+ */
+async function isAtCapacity(
+  supabase: PublicSupabase,
+  eventId: number,
+  maxGuestCapacity: number | null
+) {
+  if (maxGuestCapacity === null) {
+    return false;
+  }
+
+  const { data: total, error } = await supabase.rpc("event_confirmed_count", {
+    p_event_id: eventId,
+  });
+
+  if (error || total === null) {
+    return false;
+  }
+
+  return total >= maxGuestCapacity;
+}
+
 export async function getPublicEvent(slug: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("event_slugs")
     .select(
-      "slug, events(id, title, details, event_date, event_time, location, slug, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, background_mode, blur_level, illustration_content_type, page_layout, updated_at)"
+      "slug, events(id, title, details, event_date, event_time, location, slug, max_guest_capacity, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, background_mode, blur_level, illustration_content_type, page_layout, updated_at)"
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -58,6 +87,11 @@ export async function getPublicEvent(slug: string) {
     confirmationManuallyClosed: event.confirmation_manually_closed,
   });
 
+  const acceptsConfirmation = confirmation.status === "open";
+  const isSoldOut =
+    acceptsConfirmation &&
+    (await isAtCapacity(supabase, event.id, event.max_guest_capacity));
+
   return {
     id: event.id,
     title: event.title,
@@ -66,7 +100,8 @@ export async function getPublicEvent(slug: string) {
     eventTime: event.event_time,
     location: event.location,
     currentSlug: event.slug,
-    acceptsConfirmation: confirmation.status === "open",
+    acceptsConfirmation,
+    isSoldOut,
     backgroundColor1: parseStoredColor(event.background_color_1),
     backgroundColor2: parseStoredColor(event.background_color_2),
     titleColor: parseStoredColor(event.title_color),

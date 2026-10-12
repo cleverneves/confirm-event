@@ -13,6 +13,7 @@ import {
   confirmationWindowColumns,
   createEventSchema,
   eventFieldsFromFormData,
+  maxGuestCapacityColumn,
   type EventFieldErrors,
 } from "@/lib/event-schema";
 import { nextAvailableSlug } from "@/lib/slug";
@@ -84,6 +85,7 @@ export async function createEventAction(
       event_time: validation.data.eventTime,
       location: validation.data.location,
       slug,
+      ...maxGuestCapacityColumn(validation.data),
       confirmation_starts_on: window.confirmation_starts_on,
       confirmation_ends_on: window.confirmation_ends_on,
       page_layout: resolved.pageLayout,

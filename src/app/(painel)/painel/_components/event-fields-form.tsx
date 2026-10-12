@@ -190,6 +190,7 @@ export function EventFieldsForm({
     formData.set("eventDate", values.eventDate);
     formData.set("eventTime", values.eventTime);
     formData.set("location", values.location);
+    formData.set("maxGuestCapacity", values.maxGuestCapacity);
     formData.set("layout", values.layout);
     formData.set("confirmationStartsOn", values.confirmationStartsOn);
     formData.set("confirmationEndsOn", values.confirmationEndsOn);
@@ -219,6 +220,11 @@ export function EventFieldsForm({
       }
       if (result.errors?.location) {
         form.setError("location", { message: result.errors.location[0] });
+      }
+      if (result.errors?.maxGuestCapacity) {
+        form.setError("maxGuestCapacity", {
+          message: result.errors.maxGuestCapacity[0],
+        });
       }
       if (result.errors?.layout) {
         form.setError("layout", { message: result.errors.layout[0] });
@@ -332,6 +338,27 @@ export function EventFieldsForm({
               <Input
                 {...field}
                 id="event-location"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : null}
+            </Field>
+          )}
+        />
+        <Controller
+          name="maxGuestCapacity"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="event-max-guest-capacity">
+                Capacidade máxima de convidados (opcional)
+              </FieldLabel>
+              <Input
+                {...field}
+                id="event-max-guest-capacity"
+                inputMode="numeric"
+                autoComplete="off"
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid ? (
