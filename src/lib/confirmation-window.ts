@@ -81,13 +81,13 @@ export function confirmationPanelMessage(
 ) {
   switch (resolution.reason) {
     case "open":
-      return `A confirmação está aberta até ${formatEventDate(resolution.lastOpenDay)}.`;
+      return `A confirmação para o evento está aberta até ${formatEventDate(resolution.lastOpenDay)}.`;
     case "manual":
-      return `Você encerrou a confirmação. Ainda dá para reativar até ${formatEventDate(resolution.lastOpenDay)}.`;
+      return `Você encerrou a confirmação para o evento. Poderá reativar até ${formatEventDate(resolution.lastOpenDay)}.`;
     case "before_start":
       return `A confirmação ainda não abriu. Ela abre em ${formatEventDate(startsOn ?? "")}.`;
     case "end_reached":
-      return "A confirmação está encerrada. O prazo já passou.";
+      return "O prazo para confirmação do evento está encerrado.";
     case "event_day_reached":
       return "A confirmação está encerrada. O prazo é o dia do evento e ele já chegou.";
   }

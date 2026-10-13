@@ -16,9 +16,6 @@ export default async function PainelPage() {
         <h1 className="font-heading text-3xl leading-none tracking-tight">
           Meus Eventos
         </h1>
-        <p className="text-muted-foreground">
-          Escolha um evento para ver o link, os dados e as confirmações.
-        </p>
       </div>
 
       {error ? (
