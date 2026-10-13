@@ -146,11 +146,11 @@ function EventThemeForm({
   const effectiveText = textColor || DEFAULT_TEXT_COLOR;
   const contrastWarnings = isPersonalized
     ? getContrastWarnings({
-        backgroundColor1: effectiveColor1,
-        backgroundColor2: effectiveColor2,
-        titleColor: effectiveTitle,
-        textColor: effectiveText,
-      })
+      backgroundColor1: effectiveColor1,
+      backgroundColor2: effectiveColor2,
+      titleColor: effectiveTitle,
+      textColor: effectiveText,
+    })
     : [];
   const previewButtonText = buttonTextColor(effectiveColor1);
   const isSubmitting = form.formState.isSubmitting;
@@ -326,7 +326,7 @@ function EventThemeForm({
               />
               <Field>
                 <FieldLabel htmlFor="theme-preview-name">
-                  Nome completo
+                  Nome e Sobrenome
                 </FieldLabel>
                 <Input
                   id="theme-preview-name"

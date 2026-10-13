@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 
 const slugSchema = z.string().min(1);
 
-const fullNameSchema = z.string().trim().min(1, "Informe o nome completo");
+const fullNameSchema = z.string().trim().min(1, "Informe o nome e sobrenome");
 
 export type ConfirmPresenceInput = {
   slug: string;

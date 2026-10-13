@@ -112,7 +112,7 @@ function PresenceRow({
           <Input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            aria-label="Nome completo"
+            aria-label="Nome e Sobrenome"
           />
         ) : (
           <div className="flex items-center gap-3">

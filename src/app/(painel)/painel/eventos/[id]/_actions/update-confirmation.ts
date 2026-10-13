@@ -6,7 +6,7 @@ import { z } from "zod";
 import { requireOrganizer } from "@/lib/auth/require-organizer";
 
 const schema = z.object({
-  fullName: z.string().trim().min(1, "Informe o nome completo"),
+  fullName: z.string().trim().min(1, "Informe o nome e sobrenome"),
 });
 
 export type UpdateConfirmationResult = {

@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { buttonThemeStyle } from "@/lib/event-theme";
 
 const formSchema = z.object({
-  fullName: z.string().trim().min(1, "Informe o nome completo"),
+  fullName: z.string().trim().min(1, "Informe o nome e sobrenome"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -164,7 +164,7 @@ function ConfirmationForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="full-name">Nome completo</FieldLabel>
+              <FieldLabel htmlFor="full-name">Nome e Sobrenome</FieldLabel>
               <Input
                 {...field}
                 id="full-name"
