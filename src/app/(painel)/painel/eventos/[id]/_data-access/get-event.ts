@@ -2,7 +2,7 @@ import {
   resolveEventConfirmation,
   type ConfirmationResolution,
 } from "@/lib/confirmation-window";
-import { requireOrganizer } from "@/lib/auth/require-organizer";
+import { requireEventAccess, type EventRole } from "@/lib/auth/event-access";
 import {
   parsePageLayout,
   type EventPageLayout,
@@ -16,6 +16,8 @@ import {
 
 export type PainelEvent = {
   id: number;
+  /** Papel da conta logada neste evento. */
+  viewerRole: EventRole;
   title: string;
   details: string | null;
   eventDate: string;
@@ -55,7 +57,11 @@ export function parseEventId(value: string) {
 }
 
 export async function getPainelEvent(eventId: number) {
-  const { supabase } = await requireOrganizer();
+  const { supabase, role } = await requireEventAccess(eventId);
+
+  if (!role) {
+    return null;
+  }
 
   const { data, error } = await supabase
     .from("events")
@@ -78,6 +84,7 @@ export async function getPainelEvent(eventId: number) {
 
   return {
     id: data.id,
+    viewerRole: role,
     title: data.title,
     details: data.details,
     eventDate: data.event_date,

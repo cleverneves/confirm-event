@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireOrganizer } from "@/lib/auth/require-organizer";
+import {
+  NO_EVENT_ACCESS_MESSAGE,
+  requireEventAccess,
+} from "@/lib/auth/event-access";
 import { eventSlugSchema } from "@/lib/event-schema";
 
 export type UpdateEventSlugResult = {
@@ -17,7 +20,12 @@ export async function updateEventSlugAction(
   eventId: number,
   input: { slug: string }
 ): Promise<UpdateEventSlugResult> {
-  const { supabase } = await requireOrganizer();
+  const { supabase, role } = await requireEventAccess(eventId);
+
+  if (!role) {
+    return { success: false, message: NO_EVENT_ACCESS_MESSAGE };
+  }
+
   const validation = eventSlugSchema.safeParse(input.slug);
 
   if (!validation.success) {
@@ -82,15 +90,17 @@ export async function updateEventSlugAction(
     }
   }
 
-  const { error: updateError } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from("events")
     .update({
       slug: newSlug,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", eventId);
+    .eq("id", eventId)
+    .select("id")
+    .maybeSingle();
 
-  if (updateError) {
+  if (updateError || !updated) {
     return {
       success: false,
       message: "Não foi possível alterar o link. Tente de novo.",

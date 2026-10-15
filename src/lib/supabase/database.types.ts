@@ -23,6 +23,7 @@ export type Database = {
           background_mode: string;
           blur_level: number | null;
           max_guest_capacity: number | null;
+          created_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -47,6 +48,7 @@ export type Database = {
           background_mode?: string;
           blur_level?: number | null;
           max_guest_capacity?: number | null;
+          created_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -71,6 +73,7 @@ export type Database = {
           background_mode?: string;
           blur_level?: number | null;
           max_guest_capacity?: number | null;
+          created_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -128,6 +131,32 @@ export type Database = {
           },
         ];
       };
+      event_organizers: {
+        Row: {
+          event_id: number;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          event_id: number;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          event_id?: number;
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "event_organizers_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: false;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       organizer_profiles: {
         Row: {
           user_id: string;
@@ -158,6 +187,41 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      add_event_organizer: {
+        Args: { p_event_id: number; p_email: string };
+        Returns: string;
+      };
+      can_manage_event: {
+        Args: { p_event_id: number };
+        Returns: boolean;
+      };
+      event_creator_labels: {
+        Args: { p_event_ids: number[] };
+        Returns: {
+          label_event_id: number;
+          creator_email: string;
+          first_name: string | null;
+          last_name: string | null;
+        }[];
+      };
+      leave_event: {
+        Args: { p_event_id: number };
+        Returns: string;
+      };
+      list_event_organizers: {
+        Args: { p_event_id: number };
+        Returns: {
+          member_user_id: string;
+          member_email: string;
+          first_name: string | null;
+          last_name: string | null;
+          is_creator: boolean;
+        }[];
+      };
+      remove_event_organizer: {
+        Args: { p_event_id: number; p_user_id: string };
+        Returns: string;
+      };
       confirmation_accepts_name: {
         Args: { p_event_id: number };
         Returns: boolean;

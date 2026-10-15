@@ -27,7 +27,7 @@ export type CreateEventResult = {
 export async function createEventAction(
   formData: FormData
 ): Promise<CreateEventResult> {
-  const { supabase } = await requireOrganizer();
+  const { user, supabase } = await requireOrganizer();
   const validation = createEventSchema.safeParse(eventFieldsFromFormData(formData));
 
   if (!validation.success) {
@@ -85,6 +85,7 @@ export async function createEventAction(
       event_time: validation.data.eventTime,
       location: validation.data.location,
       slug,
+      created_by: user.id,
       ...maxGuestCapacityColumn(validation.data),
       confirmation_starts_on: window.confirmation_starts_on,
       confirmation_ends_on: window.confirmation_ends_on,

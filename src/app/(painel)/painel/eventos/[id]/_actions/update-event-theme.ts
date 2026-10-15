@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireOrganizer } from "@/lib/auth/require-organizer";
+import {
+  NO_EVENT_ACCESS_MESSAGE,
+  requireEventAccess,
+} from "@/lib/auth/event-access";
 import {
   eventThemeSchema,
   type EventThemeFieldErrors,
@@ -19,7 +22,12 @@ export async function updateEventThemeAction(
   eventId: number,
   input: EventThemeInput
 ): Promise<UpdateEventThemeResult> {
-  const { supabase } = await requireOrganizer();
+  const { supabase, role } = await requireEventAccess(eventId);
+
+  if (!role) {
+    return { success: false, message: NO_EVENT_ACCESS_MESSAGE };
+  }
+
   const validation = eventThemeSchema.safeParse(input);
 
   if (!validation.success) {
@@ -45,7 +53,7 @@ export async function updateEventThemeAction(
     };
   }
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("events")
     .update({
       background_color_1: validation.data.backgroundColor1,
@@ -56,9 +64,11 @@ export async function updateEventThemeAction(
       blur_level: validation.data.blurLevel,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", eventId);
+    .eq("id", eventId)
+    .select("id")
+    .maybeSingle();
 
-  if (error) {
+  if (error || !updated) {
     return {
       success: false,
       message: "Não foi possível salvar. Tente de novo.",

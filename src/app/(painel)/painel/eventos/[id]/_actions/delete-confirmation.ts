@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireOrganizer } from "@/lib/auth/require-organizer";
+import {
+  NO_EVENT_ACCESS_MESSAGE,
+  requireEventAccess,
+} from "@/lib/auth/event-access";
 
 export type DeleteConfirmationResult = {
   success: boolean;
@@ -13,7 +16,11 @@ export async function deleteConfirmationAction(
   eventId: number,
   confirmationId: number
 ): Promise<DeleteConfirmationResult> {
-  const { supabase } = await requireOrganizer();
+  const { supabase, role } = await requireEventAccess(eventId);
+
+  if (!role) {
+    return { success: false, message: NO_EVENT_ACCESS_MESSAGE };
+  }
 
   const { data: event } = await supabase
     .from("events")

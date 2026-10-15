@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireOrganizer } from "@/lib/auth/require-organizer";
+import {
+  NO_EVENT_ACCESS_MESSAGE,
+  requireEventAccess,
+} from "@/lib/auth/event-access";
 import { isDateBeforeToday } from "@/lib/event-date";
 import { parsePageLayout } from "@/lib/event-illustration";
 import {
@@ -28,7 +31,12 @@ export async function updateEventAction(
   eventId: number,
   formData: FormData
 ): Promise<UpdateEventResult> {
-  const { supabase } = await requireOrganizer();
+  const { supabase, role } = await requireEventAccess(eventId);
+
+  if (!role) {
+    return { success: false, message: NO_EVENT_ACCESS_MESSAGE };
+  }
+
   const validation = eventFieldsSchema.safeParse(eventFieldsFromFormData(formData));
 
   if (!validation.success) {
@@ -88,7 +96,7 @@ export async function updateEventAction(
 
   const window = confirmationWindowColumns(validation.data);
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("events")
     .update({
       title: validation.data.title,
@@ -103,9 +111,11 @@ export async function updateEventAction(
       updated_at: new Date().toISOString(),
       ...illustrationColumns(resolved.illustration),
     })
-    .eq("id", eventId);
+    .eq("id", eventId)
+    .select("id")
+    .maybeSingle();
 
-  if (error) {
+  if (error || !updated) {
     return {
       success: false,
       message: "Não foi possível salvar. Tente de novo.",

@@ -73,6 +73,11 @@ export function EventList({ events }: { events: EventListItem[] }) {
               </p>
               <ConfirmationStatusBadge isOpen={event.confirmationOpen} />
             </div>
+            {event.creatorName ? (
+              <p className="text-sm text-muted-foreground">
+                criado por: {event.creatorName}
+              </p>
+            ) : null}
             {event.confirmedCount === null ? (
               <p className="text-sm text-muted-foreground">
                 Quantidade indisponível

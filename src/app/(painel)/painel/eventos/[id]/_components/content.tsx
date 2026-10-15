@@ -1,10 +1,13 @@
 import { EventHero } from "./event-hero";
 import { EventMetrics } from "./event-metrics";
 import { DeleteEvent } from "./delete-event";
+import { OrganizersCard } from "./organizers-card";
 import { PresenceList } from "./presence-list";
 import type { PainelEvent } from "../_data-access/get-event";
+import type { EventOrganizer } from "../_data-access/get-organizers";
 import type { Presence } from "../_data-access/get-presences";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { canDeleteEvent } from "@/lib/event-roles";
 
 export function EventContent({
   event,
@@ -12,12 +15,16 @@ export function EventContent({
   total,
   confirmedLast24h,
   loadError,
+  organizers,
+  organizersLoadError,
 }: {
   event: PainelEvent;
   confirmations: Presence[];
   total: number;
   confirmedLast24h: number;
   loadError?: string;
+  organizers: EventOrganizer[];
+  organizersLoadError?: string;
 }) {
   return (
     <div className="flex flex-col gap-8">
@@ -39,7 +46,16 @@ export function EventContent({
         </>
       )}
 
-      <DeleteEvent eventId={event.id} />
+      <OrganizersCard
+        eventId={event.id}
+        role={event.viewerRole}
+        organizers={organizers}
+        loadError={organizersLoadError}
+      />
+
+      {canDeleteEvent(event.viewerRole) ? (
+        <DeleteEvent eventId={event.id} />
+      ) : null}
     </div>
   );
 }

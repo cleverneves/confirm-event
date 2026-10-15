@@ -1,5 +1,6 @@
 import { resolveEventConfirmation } from "@/lib/confirmation-window";
 import { requireOrganizer } from "@/lib/auth/require-organizer";
+import { organizerDisplayName } from "@/lib/organizer-display";
 import {
   eventIllustrationUrl,
   parsePageLayout,
@@ -20,6 +21,8 @@ export type EventListItem = {
   imageUrl: string | null;
   /** Total de confirmações do evento; nulo quando não pôde ser obtido. */
   confirmedCount: number | null;
+  /** Nome do criador (ou e-mail, sem nome gravado); nulo só em evento legado sem criador. */
+  creatorName: string | null;
 };
 
 type OrganizerSupabase = Awaited<ReturnType<typeof requireOrganizer>>["supabase"];
@@ -45,14 +48,72 @@ async function countConfirmations(
   }
 }
 
+/** Nome do criador por evento. Eventos sem rótulo (legado sem criador) ficam de fora. */
+async function loadCreatorNames(
+  supabase: OrganizerSupabase,
+  eventIds: number[]
+): Promise<Map<number, string>> {
+  const names = new Map<number, string>();
+
+  if (eventIds.length === 0) {
+    return names;
+  }
+
+  try {
+    const { data, error } = await supabase.rpc("event_creator_labels", {
+      p_event_ids: eventIds,
+    });
+
+    if (error) {
+      return names;
+    }
+
+    for (const label of data ?? []) {
+      names.set(
+        label.label_event_id,
+        organizerDisplayName({
+          firstName: label.first_name,
+          lastName: label.last_name,
+          email: label.creator_email,
+        })
+      );
+    }
+  } catch {
+    // Sem rótulo, o card não mostra a linha "criado por:".
+  }
+
+  return names;
+}
+
 export async function getEvents() {
-  const { supabase } = await requireOrganizer();
+  const { user, supabase } = await requireOrganizer();
+
+  const { data: memberships, error: membershipsError } = await supabase
+    .from("event_organizers")
+    .select("event_id")
+    .eq("user_id", user.id);
+
+  if (membershipsError) {
+    return {
+      events: [] as EventListItem[],
+      error: "Não foi possível carregar os eventos.",
+    };
+  }
+
+  // Eventos criados pela conta, eventos em que foi incluída e eventos legados sem criador.
+  const accessFilters = [`created_by.eq.${user.id}`, "created_by.is.null"];
+  const includedIds = (memberships ?? []).map((membership) => membership.event_id);
+
+  if (includedIds.length > 0) {
+    accessFilters.push(`id.in.(${includedIds.join(",")})`);
+  }
 
   const { data, error } = await supabase
     .from("events")
     .select(
       "id, title, event_date, event_time, location, slug, max_guest_capacity, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, illustration_content_type, page_layout, updated_at"
     )
+    .or(accessFilters.join(","))
     .order("event_date", { ascending: true })
     .order("title", { ascending: true });
 
@@ -64,9 +125,13 @@ export async function getEvents() {
   }
 
   const rows = data ?? [];
-  const confirmedCounts = await Promise.all(
-    rows.map((event) => countConfirmations(supabase, event.id))
-  );
+  const [confirmedCounts, creatorNames] = await Promise.all([
+    Promise.all(rows.map((event) => countConfirmations(supabase, event.id))),
+    loadCreatorNames(
+      supabase,
+      rows.map((event) => event.id)
+    ),
+  ]);
 
   return {
     events: rows.map((event, index) => {
@@ -80,6 +145,7 @@ export async function getEvents() {
       return {
         id: event.id,
         confirmedCount: confirmedCounts[index],
+        creatorName: creatorNames.get(event.id) ?? null,
         title: event.title,
         eventDate: event.event_date,
         eventTime: event.event_time,

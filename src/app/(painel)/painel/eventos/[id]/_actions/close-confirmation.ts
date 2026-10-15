@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireOrganizer } from "@/lib/auth/require-organizer";
+import {
+  NO_EVENT_ACCESS_MESSAGE,
+  requireEventAccess,
+} from "@/lib/auth/event-access";
 import {
   confirmationPanelMessage,
   resolveConfirmation,
@@ -25,7 +28,12 @@ export async function closeConfirmationAction(
     };
   }
 
-  const { supabase } = await requireOrganizer();
+  const { supabase, role } = await requireEventAccess(eventId);
+
+  if (!role) {
+    return { success: false, message: NO_EVENT_ACCESS_MESSAGE };
+  }
+
   const { data: event, error: eventError } = await supabase
     .from("events")
     .select(
@@ -56,15 +64,17 @@ export async function closeConfirmationAction(
     };
   }
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("events")
     .update({
       confirmation_manually_closed: true,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", eventId);
+    .eq("id", eventId)
+    .select("id")
+    .maybeSingle();
 
-  if (error) {
+  if (error || !updated) {
     return {
       success: false,
       message: "Não foi possível encerrar a confirmação. Tente de novo.",
@@ -89,7 +99,12 @@ export type ReopenConfirmationResult = {
 export async function reopenConfirmationAction(
   eventId: number
 ): Promise<ReopenConfirmationResult> {
-  const { supabase } = await requireOrganizer();
+  const { supabase, role } = await requireEventAccess(eventId);
+
+  if (!role) {
+    return { success: false, message: NO_EVENT_ACCESS_MESSAGE };
+  }
+
   const { data: event, error: eventError } = await supabase
     .from("events")
     .select(
@@ -105,15 +120,17 @@ export async function reopenConfirmationAction(
     };
   }
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("events")
     .update({
       confirmation_manually_closed: false,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", eventId);
+    .eq("id", eventId)
+    .select("id")
+    .maybeSingle();
 
-  if (error) {
+  if (error || !updated) {
     return {
       success: false,
       message: "Não foi possível reativar a confirmação. Tente de novo.",

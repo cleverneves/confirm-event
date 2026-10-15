@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { requireOrganizer } from "@/lib/auth/require-organizer";
+import {
+  NO_EVENT_ACCESS_MESSAGE,
+  requireEventAccess,
+} from "@/lib/auth/event-access";
 
 const schema = z.object({
   fullName: z.string().trim().min(1, "Informe o nome e sobrenome"),
@@ -22,7 +25,12 @@ export async function updateConfirmationAction(
   confirmationId: number,
   input: { fullName: string }
 ): Promise<UpdateConfirmationResult> {
-  const { supabase } = await requireOrganizer();
+  const { supabase, role } = await requireEventAccess(eventId);
+
+  if (!role) {
+    return { success: false, message: NO_EVENT_ACCESS_MESSAGE };
+  }
+
   const validation = schema.safeParse(input);
 
   if (!validation.success) {
