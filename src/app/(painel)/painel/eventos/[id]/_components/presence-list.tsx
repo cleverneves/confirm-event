@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarIcon, Trash2Icon } from "lucide-react";
+import { CalendarIcon, Trash2Icon, UserRoundCheckIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { deleteConfirmationAction } from "../_actions/delete-confirmation";
@@ -47,20 +47,6 @@ import {
 import { formatConfirmationDateTime } from "@/lib/event-date";
 
 const PAGE_SIZE = 5;
-
-function getInitials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-
-  if (parts.length === 0) {
-    return "?";
-  }
-
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-
-  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-}
 
 function PresenceRow({
   eventId,
@@ -116,9 +102,10 @@ function PresenceRow({
           />
         ) : (
           <div className="flex items-center gap-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border bg-background text-xs font-semibold">
-              {getInitials(confirmation.fullName)}
-            </span>
+            <UserRoundCheckIcon
+              aria-hidden="true"
+              className="size-5 shrink-0 text-[#16a34a]"
+            />
             <span className="font-medium">{confirmation.fullName}</span>
           </div>
         )}
