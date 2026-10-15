@@ -184,6 +184,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      organizer_profile_images: {
+        Row: {
+          user_id: string;
+          image: string;
+          content_type: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          image: string;
+          content_type: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          image?: string;
+          content_type?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -216,7 +237,19 @@ export type Database = {
           first_name: string | null;
           last_name: string | null;
           is_creator: boolean;
+          profile_image_updated_at: string | null;
         }[];
+      };
+      organizer_profile_image: {
+        Args: { p_user_id: string };
+        Returns: {
+          image: string;
+          content_type: string;
+        }[];
+      };
+      can_view_organizer_profile_image: {
+        Args: { p_user_id: string };
+        Returns: boolean;
       };
       remove_event_organizer: {
         Args: { p_event_id: number; p_user_id: string };

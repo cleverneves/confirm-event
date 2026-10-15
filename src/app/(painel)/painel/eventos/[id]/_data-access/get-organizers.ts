@@ -1,5 +1,6 @@
 import { requireOrganizer } from "@/lib/auth/require-organizer";
 import { organizerDisplayName } from "@/lib/organizer-display";
+import { profileImageUrl } from "@/lib/profile-image";
 
 export type EventOrganizer = {
   userId: string;
@@ -7,6 +8,7 @@ export type EventOrganizer = {
   /** Nome e sobrenome gravados no perfil; o e-mail quando o perfil não tem os dois. */
   name: string;
   isCreator: boolean;
+  imageUrl: string | null;
 };
 
 export type OrganizersResult = {
@@ -42,6 +44,12 @@ export async function getEventOrganizers(
           email: organizer.member_email,
         }),
         isCreator: organizer.is_creator,
+        imageUrl: organizer.profile_image_updated_at
+          ? profileImageUrl(
+              organizer.member_user_id,
+              organizer.profile_image_updated_at
+            )
+          : null,
       })),
     };
   } catch {

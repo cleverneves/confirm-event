@@ -8,6 +8,7 @@ export default async function ProfilePage() {
     <ProfileContent
       email={profile.email}
       fields={profile.fields}
+      imageUrl={profile.imageUrl}
       loadError={profile.error}
     />
   );

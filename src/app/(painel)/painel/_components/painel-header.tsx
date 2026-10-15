@@ -5,10 +5,17 @@ import { usePathname } from "next/navigation";
 import { PlusIcon } from "lucide-react";
 
 import { logoutAction } from "../_actions/logout";
+import { ProfileAvatar } from "./profile-avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "cn";
 
-export function PainelHeader({ email }: { email: string }) {
+export function PainelHeader({
+  displayName,
+  imageUrl,
+}: {
+  displayName: string;
+  imageUrl: string | null;
+}) {
   const pathname = usePathname();
   const isMeusEventos =
     pathname === "/painel" || /^\/painel\/eventos\/\d+/.test(pathname);
@@ -54,13 +61,18 @@ export function PainelHeader({ email }: { email: string }) {
             <PlusIcon data-icon="inline-start" />
             Novo Evento
           </Button>
-          <form action={logoutAction} className="flex items-center gap-3">
-            {email ? (
-              <p className="hidden max-w-40 truncate text-sm text-muted-foreground md:block">
-                {email}
+          <form action={logoutAction} className="flex min-w-0 items-center gap-3">
+            <div className="flex min-w-0 max-w-[min(12rem,40vw)] items-center gap-2 sm:max-w-48">
+              <ProfileAvatar
+                src={imageUrl}
+                alt={displayName}
+                className="size-9"
+              />
+              <p className="truncate text-sm text-muted-foreground">
+                {displayName}
               </p>
-            ) : null}
-            <Button type="submit" variant="outline">
+            </div>
+            <Button type="submit" variant="outline" className="shrink-0">
               Sair
             </Button>
           </form>

@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
 import { updateProfileAction } from "../_actions/update-profile";
+import { ProfileImageSection } from "./profile-image-section";
+import { organizerDisplayName } from "@/lib/organizer-display";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,12 +27,19 @@ import {
 export function ProfileContent({
   email,
   fields,
+  imageUrl,
   loadError,
 }: {
   email: string;
   fields: ProfileFormValues;
+  imageUrl: string | null;
   loadError?: string;
 }) {
+  const displayName = organizerDisplayName({
+    firstName: fields.firstName || null,
+    lastName: fields.lastName || null,
+    email,
+  });
   const router = useRouter();
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -87,6 +96,11 @@ export function ProfileContent({
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
       ) : null}
+
+      <ProfileImageSection
+        initialImageUrl={imageUrl}
+        displayName={displayName}
+      />
 
       <form onSubmit={form.handleSubmit(handleSubmit)}>
         <FieldGroup>
