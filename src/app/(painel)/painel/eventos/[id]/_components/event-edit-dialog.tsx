@@ -7,11 +7,9 @@ import { updateEventAction } from "../_actions/update-event";
 import { EventFieldsForm } from "../../../_components/event-fields-form";
 import type { PainelEvent } from "../_data-access/get-event";
 import { Button } from "@/components/ui/button";
-import { eventIllustrationUrl } from "@/lib/event-illustration";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -31,30 +29,23 @@ export function EventEditDialog({ event }: { event: PainelEvent }) {
         <DialogHeader>
           <DialogTitle>Editar evento</DialogTitle>
         </DialogHeader>
-        <EventFieldsForm
-          key={`${event.title}-${event.eventDate}-${event.eventTime}-${event.location}-${event.maxGuestCapacity ?? ""}-${event.details ?? ""}-${event.confirmationStartsOn ?? ""}-${event.confirmationEndsOn ?? ""}-${event.pageLayout}-${event.hasIllustration}-${event.updatedAt}`}
-          defaultValues={{
-            title: event.title,
-            details: event.details ?? "",
-            eventDate: event.eventDate,
-            eventTime: formatEventTime(event.eventTime),
-            location: event.location,
-            maxGuestCapacity: event.maxGuestCapacity?.toString() ?? "",
-            layout: event.pageLayout,
-            confirmationStartsOn: event.confirmationStartsOn ?? "",
-            confirmationEndsOn: event.confirmationEndsOn ?? "",
-          }}
-          currentDate={event.eventDate}
-          submitLabel="Salvar"
-          persistedLayout={event.pageLayout}
-          savedImageUrl={
-            event.hasIllustration
-              ? eventIllustrationUrl(event.slug, event.updatedAt)
-              : null
-          }
-          onSubmit={(formData) => updateEventAction(event.id, formData)}
-          onSuccess={() => setOpen(false)}
-        />
+        {open ? (
+          <EventFieldsForm
+            key={`${event.title}-${event.eventDate}-${event.eventTime}-${event.location}-${event.details ?? ""}`}
+            mode="occasion"
+            defaultValues={{
+              title: event.title,
+              details: event.details ?? "",
+              eventDate: event.eventDate,
+              eventTime: formatEventTime(event.eventTime),
+              location: event.location,
+            }}
+            currentDate={event.eventDate}
+            submitLabel="Salvar"
+            onSubmit={(formData) => updateEventAction(event.id, formData)}
+            onSuccess={() => setOpen(false)}
+          />
+        ) : null}
       </DialogContent>
     </Dialog>
   );

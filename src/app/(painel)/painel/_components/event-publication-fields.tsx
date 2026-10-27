@@ -1,0 +1,240 @@
+"use client";
+
+import type { Control, FieldValues, Path } from "react-hook-form";
+import { Controller } from "react-hook-form";
+
+import { EventIllustration } from "@/components/event-illustration";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+  FieldTitle,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  illustrationAspect,
+  illustrationAspectWarning,
+  illustrationFieldHelp,
+  type EventPageLayout,
+} from "@/lib/event-illustration";
+
+type PublicationShape = {
+  layout: EventPageLayout;
+  maxGuestCapacity: string;
+  confirmationStartsOn: string;
+  confirmationEndsOn: string;
+};
+
+export function EventLayoutField<T extends FieldValues & PublicationShape>({
+  control,
+  idPrefix,
+}: {
+  control: Control<T>;
+  idPrefix: string;
+}) {
+  return (
+    <Controller
+      name={"layout" as Path<T>}
+      control={control}
+      render={({ field, fieldState }) => (
+        <FieldSet>
+          <FieldLegend variant="label">Layout da página</FieldLegend>
+          <RadioGroup
+            value={field.value}
+            onValueChange={field.onChange}
+            aria-invalid={fieldState.invalid}
+          >
+            <FieldLabel htmlFor={`${idPrefix}-layout-personalized`}>
+              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                <RadioGroupItem
+                  value="personalized"
+                  id={`${idPrefix}-layout-personalized`}
+                />
+                <FieldContent>
+                  <FieldTitle>Personalizado</FieldTitle>
+                  <FieldDescription>
+                    Exibe todas as informações editáveis.
+                  </FieldDescription>
+                </FieldContent>
+              </Field>
+            </FieldLabel>
+            <FieldLabel htmlFor={`${idPrefix}-layout-image-only`}>
+              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                <RadioGroupItem
+                  value="image_only"
+                  id={`${idPrefix}-layout-image-only`}
+                />
+                <FieldContent>
+                  <FieldTitle>Somente imagem</FieldTitle>
+                  <FieldDescription>Exibe a imagem do evento.</FieldDescription>
+                </FieldContent>
+              </Field>
+            </FieldLabel>
+          </RadioGroup>
+          {fieldState.invalid ? (
+            <FieldError errors={[fieldState.error]} />
+          ) : null}
+        </FieldSet>
+      )}
+    />
+  );
+}
+
+export function EventIllustrationField({
+  selectedLayout,
+  isImageRequired,
+  previewUrl,
+  previewAlt,
+  hasAspectWarning,
+  fileError,
+  inputId,
+  fileInputRef,
+  onFileChange,
+  onRemove,
+}: {
+  selectedLayout: EventPageLayout;
+  isImageRequired: boolean;
+  previewUrl: string | null;
+  previewAlt: string;
+  hasAspectWarning: boolean;
+  fileError: string | null;
+  inputId: string;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <Field data-invalid={Boolean(fileError)}>
+      <FieldLabel htmlFor={inputId}>
+        {isImageRequired ? "Imagem" : "Imagem (opcional)"}
+      </FieldLabel>
+      <FieldDescription>{illustrationFieldHelp(selectedLayout)}</FieldDescription>
+      {previewUrl ? (
+        <EventIllustration
+          src={previewUrl}
+          alt={previewAlt}
+          aspect={illustrationAspect(selectedLayout)}
+        />
+      ) : null}
+      {hasAspectWarning ? (
+        <Alert>
+          <AlertDescription>
+            {illustrationAspectWarning(selectedLayout)}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      <Input
+        ref={fileInputRef}
+        id={inputId}
+        type="file"
+        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+        aria-invalid={Boolean(fileError)}
+        onChange={(event) => void onFileChange(event)}
+      />
+      {fileError ? <FieldError errors={[{ message: fileError }]} /> : null}
+      {previewUrl ? (
+        <Button type="button" variant="outline" onClick={onRemove}>
+          Remover imagem
+        </Button>
+      ) : null}
+    </Field>
+  );
+}
+
+export function EventCapacityField<T extends FieldValues & PublicationShape>({
+  control,
+  idPrefix,
+}: {
+  control: Control<T>;
+  idPrefix: string;
+}) {
+  return (
+    <Controller
+      name={"maxGuestCapacity" as Path<T>}
+      control={control}
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid}>
+          <FieldLabel htmlFor={`${idPrefix}-max-guest-capacity`}>
+            Capacidade máxima de convidados (opcional)
+          </FieldLabel>
+          <Input
+            {...field}
+            id={`${idPrefix}-max-guest-capacity`}
+            inputMode="numeric"
+            autoComplete="off"
+            aria-invalid={fieldState.invalid}
+          />
+          {fieldState.invalid ? (
+            <FieldError errors={[fieldState.error]} />
+          ) : null}
+        </Field>
+      )}
+    />
+  );
+}
+
+export function EventConfirmationWindowFields<
+  T extends FieldValues & PublicationShape,
+>({
+  control,
+  idPrefix,
+}: {
+  control: Control<T>;
+  idPrefix: string;
+}) {
+  return (
+    <FieldSet>
+      <FieldLegend>Janela de confirmação (opcional)</FieldLegend>
+      <FieldDescription>
+        Início e fim que a confirmação fica disponível para o convidado.
+      </FieldDescription>
+      <Controller
+        name={"confirmationStartsOn" as Path<T>}
+        control={control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={`${idPrefix}-confirmation-starts-on`}>
+              Início
+            </FieldLabel>
+            <Input
+              {...field}
+              id={`${idPrefix}-confirmation-starts-on`}
+              type="date"
+              aria-invalid={fieldState.invalid}
+            />
+            {fieldState.invalid ? (
+              <FieldError errors={[fieldState.error]} />
+            ) : null}
+          </Field>
+        )}
+      />
+      <Controller
+        name={"confirmationEndsOn" as Path<T>}
+        control={control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={`${idPrefix}-confirmation-ends-on`}>
+              Fim
+            </FieldLabel>
+            <Input
+              {...field}
+              id={`${idPrefix}-confirmation-ends-on`}
+              type="date"
+              aria-invalid={fieldState.invalid}
+            />
+            {fieldState.invalid ? (
+              <FieldError errors={[fieldState.error]} />
+            ) : null}
+          </Field>
+        )}
+      />
+    </FieldSet>
+  );
+}

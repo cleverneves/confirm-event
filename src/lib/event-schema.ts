@@ -26,10 +26,127 @@ const eventFieldsObject = z.object({
   confirmationEndsOn: z.string(),
 });
 
+const eventOccasionObject = z.object({
+  title: z.string().trim().min(1, "Informe o título"),
+  details: z.string(),
+  eventDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe um dia válido"),
+  eventTime: z.string().regex(/^\d{2}:\d{2}$/, "Informe um horário válido"),
+  location: z.string().trim().min(1, "Informe o local"),
+});
+
+const eventSettingsObject = z.object({
+  maxGuestCapacity: z.string(),
+  layout: z.enum(PAGE_LAYOUTS),
+  confirmationStartsOn: z.string(),
+  confirmationEndsOn: z.string(),
+});
+
+export const EVENT_DATE_INVALIDATES_WINDOW_MESSAGE =
+  "Essa data deixa a janela de confirmação inválida. Ajuste ou limpe a janela em Configurações.";
+
+export type EventSettingsFields = z.infer<typeof eventSettingsObject>;
+
+export type EventOccasionFields = z.infer<typeof eventOccasionObject>;
+
+export type EventSettingsFieldErrors = Pick<
+  EventFieldErrors,
+  | "maxGuestCapacity"
+  | "layout"
+  | "confirmationStartsOn"
+  | "confirmationEndsOn"
+  | "illustration"
+>;
+
 export const eventFieldsSchema = eventFieldsObject.superRefine((data, ctx) => {
   refineConfirmationWindow(data, ctx);
   refineMaxGuestCapacity(data, ctx);
 });
+
+export function makeEventSettingsSchema(savedEventDate: string) {
+  return eventSettingsObject.superRefine((data, ctx) => {
+    refineConfirmationWindow(
+      {
+        confirmationStartsOn: data.confirmationStartsOn,
+        confirmationEndsOn: data.confirmationEndsOn,
+        eventDate: savedEventDate,
+      },
+      ctx
+    );
+    refineMaxGuestCapacity({ maxGuestCapacity: data.maxGuestCapacity }, ctx);
+  });
+}
+
+export function makeEventOccasionSchema(currentDate?: string) {
+  return eventOccasionObject.superRefine((data, ctx) => {
+    if (currentDate && data.eventDate === currentDate) {
+      return;
+    }
+
+    if (isDateBeforeToday(data.eventDate)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["eventDate"],
+        message: "A data não pode estar no passado.",
+      });
+    }
+  });
+}
+
+export function eventOccasionFromFormData(formData: FormData): EventOccasionFields {
+  return {
+    title: String(formData.get("title") ?? ""),
+    details: String(formData.get("details") ?? ""),
+    eventDate: String(formData.get("eventDate") ?? ""),
+    eventTime: String(formData.get("eventTime") ?? ""),
+    location: String(formData.get("location") ?? ""),
+  };
+}
+
+export function eventSettingsFromFormData(formData: FormData): EventSettingsFields {
+  return {
+    maxGuestCapacity: String(formData.get("maxGuestCapacity") ?? ""),
+    layout: String(formData.get("layout") ?? "") as EventSettingsFields["layout"],
+    confirmationStartsOn: String(formData.get("confirmationStartsOn") ?? ""),
+    confirmationEndsOn: String(formData.get("confirmationEndsOn") ?? ""),
+  };
+}
+
+export function isOccasionDateInvalidForSavedWindow(
+  newEventDate: string,
+  confirmationStartsOn: string | null,
+  confirmationEndsOn: string | null
+) {
+  const startsOn = (confirmationStartsOn ?? "").trim();
+  const endsOn = (confirmationEndsOn ?? "").trim();
+
+  if (startsOn === "" && endsOn === "") {
+    return false;
+  }
+
+  if (startsOn === "" || endsOn === "") {
+    return true;
+  }
+
+  if (!isValidCalendarDate(startsOn) || !isValidCalendarDate(endsOn)) {
+    return true;
+  }
+
+  if (!isValidCalendarDate(newEventDate)) {
+    return false;
+  }
+
+  if (startsOn >= endsOn) {
+    return true;
+  }
+
+  if (startsOn >= newEventDate || endsOn >= newEventDate) {
+    return true;
+  }
+
+  return false;
+}
 
 export function makeEventFieldsSchema(currentDate?: string) {
   return eventFieldsObject.superRefine((data, ctx) => {
@@ -135,7 +252,7 @@ export function maxGuestCapacityColumn(data: EventFields) {
 }
 
 function refineMaxGuestCapacity(
-  data: z.infer<typeof eventFieldsObject>,
+  data: { maxGuestCapacity: string },
   ctx: z.RefinementCtx
 ) {
   if (parseMaxGuestCapacity(data.maxGuestCapacity) === undefined) {
@@ -148,7 +265,11 @@ function refineMaxGuestCapacity(
 }
 
 function refineConfirmationWindow(
-  data: z.infer<typeof eventFieldsObject>,
+  data: {
+    confirmationStartsOn: string;
+    confirmationEndsOn: string;
+    eventDate: string;
+  },
   ctx: z.RefinementCtx
 ) {
   const startsOn = data.confirmationStartsOn.trim();

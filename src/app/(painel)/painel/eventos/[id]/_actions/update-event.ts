@@ -7,17 +7,11 @@ import {
   requireEventAccess,
 } from "@/lib/auth/event-access";
 import { isDateBeforeToday } from "@/lib/event-date";
-import { parsePageLayout } from "@/lib/event-illustration";
 import {
-  illustrationColumns,
-  readIllustrationFromFormData,
-  resolvePageLayoutSave,
-} from "@/lib/event-illustration-server";
-import {
-  confirmationWindowColumns,
-  eventFieldsFromFormData,
-  eventFieldsSchema,
-  maxGuestCapacityColumn,
+  EVENT_DATE_INVALIDATES_WINDOW_MESSAGE,
+  eventOccasionFromFormData,
+  isOccasionDateInvalidForSavedWindow,
+  makeEventOccasionSchema,
   type EventFieldErrors,
 } from "@/lib/event-schema";
 
@@ -37,26 +31,11 @@ export async function updateEventAction(
     return { success: false, message: NO_EVENT_ACCESS_MESSAGE };
   }
 
-  const validation = eventFieldsSchema.safeParse(eventFieldsFromFormData(formData));
-
-  if (!validation.success) {
-    const errors = validation.error.flatten().fieldErrors as EventFieldErrors;
-
-    return {
-      success: false,
-      errors,
-      message:
-        errors.confirmationStartsOn || errors.confirmationEndsOn
-          ? "Ajuste a janela de confirmação ou deixe as duas datas vazias."
-          : "Confira os dados informados.",
-    };
-  }
-
-  const illustration = await readIllustrationFromFormData(formData);
-
   const { data: current, error: currentError } = await supabase
     .from("events")
-    .select("event_date, slug, page_layout, illustration_content_type")
+    .select(
+      "event_date, slug, confirmation_starts_on, confirmation_ends_on"
+    )
     .eq("id", eventId)
     .maybeSingle();
 
@@ -64,6 +43,20 @@ export async function updateEventAction(
     return {
       success: false,
       message: "Não foi possível salvar. Tente de novo.",
+    };
+  }
+
+  const validation = makeEventOccasionSchema(current.event_date).safeParse(
+    eventOccasionFromFormData(formData)
+  );
+
+  if (!validation.success) {
+    const errors = validation.error.flatten().fieldErrors as EventFieldErrors;
+
+    return {
+      success: false,
+      errors,
+      message: "Confira os dados informados.",
     };
   }
 
@@ -79,22 +72,21 @@ export async function updateEventAction(
     };
   }
 
-  const resolved = resolvePageLayoutSave({
-    requestedLayout: validation.data.layout,
-    persistedLayout: parsePageLayout(current.page_layout),
-    persistedHasIllustration: Boolean(current.illustration_content_type),
-    illustration,
-  });
-
-  if (resolved.kind === "invalid") {
+  if (
+    isOccasionDateInvalidForSavedWindow(
+      validation.data.eventDate,
+      current.confirmation_starts_on,
+      current.confirmation_ends_on
+    )
+  ) {
     return {
       success: false,
-      errors: { illustration: [resolved.message] },
-      message: resolved.message,
+      errors: {
+        eventDate: [EVENT_DATE_INVALIDATES_WINDOW_MESSAGE],
+      },
+      message: EVENT_DATE_INVALIDATES_WINDOW_MESSAGE,
     };
   }
-
-  const window = confirmationWindowColumns(validation.data);
 
   const { data: updated, error } = await supabase
     .from("events")
@@ -104,12 +96,7 @@ export async function updateEventAction(
       event_date: validation.data.eventDate,
       event_time: validation.data.eventTime,
       location: validation.data.location,
-      ...maxGuestCapacityColumn(validation.data),
-      confirmation_starts_on: window.confirmation_starts_on,
-      confirmation_ends_on: window.confirmation_ends_on,
-      page_layout: resolved.pageLayout,
       updated_at: new Date().toISOString(),
-      ...illustrationColumns(resolved.illustration),
     })
     .eq("id", eventId)
     .select("id")

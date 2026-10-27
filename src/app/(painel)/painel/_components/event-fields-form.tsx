@@ -1,43 +1,38 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
-import { EventIllustration } from "@/components/event-illustration";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  EventCapacityField,
+  EventConfirmationWindowFields,
+  EventIllustrationField,
+  EventLayoutField,
+} from "./event-publication-fields";
+import { useIllustrationField } from "./use-illustration-field";
 import { Button } from "@/components/ui/button";
 import {
   Field,
-  FieldContent,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSet,
-  FieldTitle,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  hasLayoutAspect,
-  illustrationAspect,
-  illustrationAspectWarning,
-  illustrationFieldHelp,
   IMAGE_ONLY_REQUIRES_IMAGE_MESSAGE,
-  ILLUSTRATION_INVALID_TYPE_MESSAGE,
-  validateIllustrationFile,
   type EventPageLayout,
 } from "@/lib/event-illustration";
 import {
   makeEventFieldsSchema,
+  makeEventOccasionSchema,
   type EventFieldErrors,
   type EventFields,
+  type EventOccasionFields,
 } from "@/lib/event-schema";
 
 type SubmitResult = {
@@ -46,202 +41,64 @@ type SubmitResult = {
   errors?: EventFieldErrors;
 };
 
-function readImageSize(file: File) {
-  return new Promise<{ width: number; height: number } | null>((resolve) => {
-    const objectUrl = URL.createObjectURL(file);
-    const image = new Image();
+type EventFieldsFormProps = {
+  submitLabel: string;
+  onSubmit: (formData: FormData) => Promise<SubmitResult>;
+  onSuccess?: () => void;
+  idPrefix?: string;
+  savedImageUrl?: string | null;
+  persistedLayout?: EventPageLayout | null;
+} & (
+  | {
+      mode?: "full";
+      defaultValues: EventFields;
+      currentDate?: string;
+    }
+  | {
+      mode: "occasion";
+      defaultValues: EventOccasionFields;
+      currentDate?: string;
+    }
+);
 
-    image.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      resolve({ width: image.naturalWidth, height: image.naturalHeight });
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      resolve(null);
-    };
-    image.src = objectUrl;
-  });
+export function EventFieldsForm(props: EventFieldsFormProps) {
+  if (props.mode === "occasion") {
+    return <EventOccasionFieldsForm {...props} />;
+  }
+
+  return <EventFullFieldsForm {...props} mode="full" defaultValues={props.defaultValues} />;
 }
 
-export function EventFieldsForm({
+function EventOccasionFieldsForm({
   defaultValues,
   currentDate,
   submitLabel,
-  savedImageUrl,
-  persistedLayout = null,
   onSubmit,
   onSuccess,
-}: {
-  defaultValues: EventFields;
-  currentDate?: string;
-  submitLabel: string;
-  savedImageUrl?: string | null;
-  persistedLayout?: EventPageLayout | null;
-  onSubmit: (formData: FormData) => Promise<SubmitResult>;
-  onSuccess?: () => void;
-}) {
+  idPrefix = "event",
+}: Extract<EventFieldsFormProps, { mode: "occasion" }>) {
   const schema = useMemo(
-    () => makeEventFieldsSchema(currentDate),
+    () => makeEventOccasionSchema(currentDate),
     [currentDate]
   );
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [objectUrl, setObjectUrl] = useState<string | null>(null);
-  const [imageSize, setImageSize] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
-  const [shouldRemoveIllustration, setShouldRemoveIllustration] = useState(false);
-  const [fileError, setFileError] = useState<string | null>(null);
-  const form = useForm<EventFields>({
+  const form = useForm<EventOccasionFields>({
     resolver: zodResolver(schema),
     defaultValues,
   });
 
-  useEffect(() => {
-    return () => {
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
-    };
-  }, [objectUrl]);
-
-  const selectedLayout = form.watch("layout");
-  const canUseSavedImage =
-    Boolean(savedImageUrl) &&
-    persistedLayout === selectedLayout &&
-    !shouldRemoveIllustration;
-  const previewUrl = objectUrl ?? (canUseSavedImage ? savedImageUrl ?? null : null);
-  const previewAlt = form.watch("title").trim() || "Prévia da imagem do evento";
-  const hasAspectWarning =
-    imageSize !== null &&
-    !hasLayoutAspect(selectedLayout, imageSize.width, imageSize.height);
-
-  function clearSelectedFile() {
-    setSelectedFile(null);
-    setImageSize(null);
-    if (objectUrl) {
-      URL.revokeObjectURL(objectUrl);
-    }
-    setObjectUrl(null);
-  }
-
-  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    const selectionError = validateIllustrationFile(file);
-
-    if (selectionError) {
-      setFileError(selectionError);
-      clearSelectedFile();
-      event.target.value = "";
-      return;
-    }
-
-    const size = await readImageSize(file);
-
-    if (!size) {
-      setFileError(ILLUSTRATION_INVALID_TYPE_MESSAGE);
-      clearSelectedFile();
-      event.target.value = "";
-      return;
-    }
-
-    if (objectUrl) {
-      URL.revokeObjectURL(objectUrl);
-    }
-
-    setFileError(null);
-    setSelectedFile(file);
-    setImageSize(size);
-    setShouldRemoveIllustration(false);
-    setObjectUrl(URL.createObjectURL(file));
-  }
-
-  function handleRemoveIllustration() {
-    clearSelectedFile();
-    setFileError(null);
-    setShouldRemoveIllustration(true);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  }
-
-  async function handleSubmit(values: EventFields) {
-    const keepsSavedImage =
-      persistedLayout === values.layout &&
-      Boolean(savedImageUrl) &&
-      !shouldRemoveIllustration;
-
-    if (values.layout === "image_only" && !selectedFile && !keepsSavedImage) {
-      setFileError(IMAGE_ONLY_REQUIRES_IMAGE_MESSAGE);
-      toast.error(IMAGE_ONLY_REQUIRES_IMAGE_MESSAGE);
-      return;
-    }
-
+  async function handleSubmit(values: EventOccasionFields) {
     const formData = new FormData();
     formData.set("title", values.title);
     formData.set("details", values.details);
     formData.set("eventDate", values.eventDate);
     formData.set("eventTime", values.eventTime);
     formData.set("location", values.location);
-    formData.set("maxGuestCapacity", values.maxGuestCapacity);
-    formData.set("layout", values.layout);
-    formData.set("confirmationStartsOn", values.confirmationStartsOn);
-    formData.set("confirmationEndsOn", values.confirmationEndsOn);
-
-    if (selectedFile) {
-      formData.set("illustration", selectedFile);
-    }
-
-    if (shouldRemoveIllustration) {
-      formData.set("removeIllustration", "true");
-    }
 
     const result = await onSubmit(formData);
 
     if (!result.success) {
-      if (result.errors?.title) {
-        form.setError("title", { message: result.errors.title[0] });
-      }
-      if (result.errors?.details) {
-        form.setError("details", { message: result.errors.details[0] });
-      }
-      if (result.errors?.eventDate) {
-        form.setError("eventDate", { message: result.errors.eventDate[0] });
-      }
-      if (result.errors?.eventTime) {
-        form.setError("eventTime", { message: result.errors.eventTime[0] });
-      }
-      if (result.errors?.location) {
-        form.setError("location", { message: result.errors.location[0] });
-      }
-      if (result.errors?.maxGuestCapacity) {
-        form.setError("maxGuestCapacity", {
-          message: result.errors.maxGuestCapacity[0],
-        });
-      }
-      if (result.errors?.layout) {
-        form.setError("layout", { message: result.errors.layout[0] });
-      }
-      if (result.errors?.confirmationStartsOn) {
-        form.setError("confirmationStartsOn", {
-          message: result.errors.confirmationStartsOn[0],
-        });
-      }
-      if (result.errors?.confirmationEndsOn) {
-        form.setError("confirmationEndsOn", {
-          message: result.errors.confirmationEndsOn[0],
-        });
-      }
-      if (result.errors?.illustration) {
-        setFileError(result.errors.illustration[0]);
-      }
+      applyOccasionErrors(form, result.errors);
       toast.error(result.message ?? "Não foi possível salvar. Tente de novo.");
       return;
     }
@@ -254,7 +111,6 @@ export function EventFieldsForm({
   }
 
   const isSubmitting = form.formState.isSubmitting;
-  const isImageRequired = selectedLayout === "image_only";
 
   return (
     <form className="flex flex-col gap-6" onSubmit={form.handleSubmit(handleSubmit)}>
@@ -264,10 +120,10 @@ export function EventFieldsForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="event-title">Título</FieldLabel>
+              <FieldLabel htmlFor={`${idPrefix}-title`}>Título</FieldLabel>
               <Input
                 {...field}
-                id="event-title"
+                id={`${idPrefix}-title`}
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid ? (
@@ -281,10 +137,12 @@ export function EventFieldsForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="event-details">Detalhes (opcional)</FieldLabel>
+              <FieldLabel htmlFor={`${idPrefix}-details`}>
+                Detalhes (opcional)
+              </FieldLabel>
               <Textarea
                 {...field}
-                id="event-details"
+                id={`${idPrefix}-details`}
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid ? (
@@ -298,10 +156,10 @@ export function EventFieldsForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="event-date">Data</FieldLabel>
+              <FieldLabel htmlFor={`${idPrefix}-date`}>Data</FieldLabel>
               <Input
                 {...field}
-                id="event-date"
+                id={`${idPrefix}-date`}
                 type="date"
                 aria-invalid={fieldState.invalid}
               />
@@ -316,10 +174,10 @@ export function EventFieldsForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="event-time">Horário</FieldLabel>
+              <FieldLabel htmlFor={`${idPrefix}-time`}>Horário</FieldLabel>
               <Input
                 {...field}
-                id="event-time"
+                id={`${idPrefix}-time`}
                 type="time"
                 aria-invalid={fieldState.invalid}
               />
@@ -334,10 +192,10 @@ export function EventFieldsForm({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="event-location">Local</FieldLabel>
+              <FieldLabel htmlFor={`${idPrefix}-location`}>Local</FieldLabel>
               <Input
                 {...field}
-                id="event-location"
+                id={`${idPrefix}-location`}
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid ? (
@@ -346,146 +204,6 @@ export function EventFieldsForm({
             </Field>
           )}
         />
-        <Controller
-          name="maxGuestCapacity"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="event-max-guest-capacity">
-                Capacidade máxima de convidados (opcional)
-              </FieldLabel>
-              <Input
-                {...field}
-                id="event-max-guest-capacity"
-                inputMode="numeric"
-                autoComplete="off"
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid ? (
-                <FieldError errors={[fieldState.error]} />
-              ) : null}
-            </Field>
-          )}
-        />
-        <Controller
-          name="layout"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <FieldSet>
-              <FieldLegend variant="label">Layout da página</FieldLegend>
-              <RadioGroup
-                value={field.value}
-                onValueChange={field.onChange}
-                aria-invalid={fieldState.invalid}
-              >
-                <FieldLabel htmlFor="layout-personalized">
-                  <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-                    <RadioGroupItem
-                      value="personalized"
-                      id="layout-personalized"
-                    />
-                    <FieldContent>
-                      <FieldTitle>Personalizado</FieldTitle>
-                      <FieldDescription>
-                        Exibe todas as informações editáveis.
-                      </FieldDescription>
-                    </FieldContent>
-                  </Field>
-                </FieldLabel>
-                <FieldLabel htmlFor="layout-image-only">
-                  <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-                    <RadioGroupItem value="image_only" id="layout-image-only" />
-                    <FieldContent>
-                      <FieldTitle>Somente imagem</FieldTitle>
-                      <FieldDescription>
-                        Exibe a imagem do evento.
-                      </FieldDescription>
-                    </FieldContent>
-                  </Field>
-                </FieldLabel>
-              </RadioGroup>
-              {fieldState.invalid ? (
-                <FieldError errors={[fieldState.error]} />
-              ) : null}
-            </FieldSet>
-          )}
-        />
-        <Field data-invalid={Boolean(fileError)}>
-          <FieldLabel htmlFor="event-illustration">
-            {isImageRequired ? "Imagem" : "Imagem (opcional)"}
-          </FieldLabel>
-          <FieldDescription>{illustrationFieldHelp(selectedLayout)}</FieldDescription>
-          {previewUrl ? (
-            <EventIllustration
-              src={previewUrl}
-              alt={previewAlt}
-              aspect={illustrationAspect(selectedLayout)}
-            />
-          ) : null}
-          {hasAspectWarning ? (
-            <Alert>
-              <AlertDescription>
-                {illustrationAspectWarning(selectedLayout)}
-              </AlertDescription>
-            </Alert>
-          ) : null}
-          <Input
-            ref={fileInputRef}
-            id="event-illustration"
-            type="file"
-            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-            aria-invalid={Boolean(fileError)}
-            onChange={(event) => void handleFileChange(event)}
-          />
-          {fileError ? <FieldError errors={[{ message: fileError }]} /> : null}
-          {previewUrl ? (
-            <Button type="button" variant="outline" onClick={handleRemoveIllustration}>
-              Remover imagem
-            </Button>
-          ) : null}
-        </Field>
-        <FieldSet>
-          <FieldLegend>Janela de confirmação (opcional)</FieldLegend>
-          <FieldDescription>
-            Início e fim que a confirmação fica disponível para o convidado.
-          </FieldDescription>
-          <Controller
-            name="confirmationStartsOn"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="confirmation-starts-on">Início</FieldLabel>
-                <Input
-                  {...field}
-                  id="confirmation-starts-on"
-                  type="date"
-                  aria-invalid={fieldState.invalid}
-                />
-                {fieldState.invalid ? (
-                  <FieldError errors={[fieldState.error]} />
-                ) : null}
-              </Field>
-            )}
-          />
-          <Controller
-            name="confirmationEndsOn"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="confirmation-ends-on">Fim</FieldLabel>
-                <Input
-                  {...field}
-                  id="confirmation-ends-on"
-                  type="date"
-                  aria-invalid={fieldState.invalid}
-                />
-                {fieldState.invalid ? (
-                  <FieldError errors={[fieldState.error]} />
-                ) : null}
-              </Field>
-            )}
-          />
-        </FieldSet>
       </FieldGroup>
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
@@ -493,4 +211,258 @@ export function EventFieldsForm({
       </Button>
     </form>
   );
+}
+
+function EventFullFieldsForm({
+  defaultValues,
+  currentDate,
+  submitLabel,
+  savedImageUrl,
+  persistedLayout = null,
+  onSubmit,
+  onSuccess,
+  idPrefix = "event",
+}: Extract<EventFieldsFormProps, { mode?: "full" }>) {
+  const schema = useMemo(
+    () => makeEventFieldsSchema(currentDate),
+    [currentDate]
+  );
+  const router = useRouter();
+  const form = useForm<EventFields>({
+    resolver: zodResolver(schema),
+    defaultValues,
+  });
+
+  const selectedLayout = form.watch("layout");
+  const previewAlt = form.watch("title").trim() || "Prévia da imagem do evento";
+  const illustration = useIllustrationField({
+    selectedLayout,
+    savedImageUrl,
+    persistedLayout,
+    previewAlt,
+    inputId: `${idPrefix}-illustration`,
+  });
+
+  async function handleSubmit(values: EventFields) {
+    if (
+      !illustration.validateImageOnlyLayout(
+        values.layout,
+        IMAGE_ONLY_REQUIRES_IMAGE_MESSAGE
+      )
+    ) {
+      toast.error(IMAGE_ONLY_REQUIRES_IMAGE_MESSAGE);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.set("title", values.title);
+    formData.set("details", values.details);
+    formData.set("eventDate", values.eventDate);
+    formData.set("eventTime", values.eventTime);
+    formData.set("location", values.location);
+    formData.set("maxGuestCapacity", values.maxGuestCapacity);
+    formData.set("layout", values.layout);
+    formData.set("confirmationStartsOn", values.confirmationStartsOn);
+    formData.set("confirmationEndsOn", values.confirmationEndsOn);
+    illustration.appendIllustrationToFormData(formData);
+
+    const result = await onSubmit(formData);
+
+    if (!result.success) {
+      applyFullErrors(form, result.errors, illustration.setFileError);
+      toast.error(result.message ?? "Não foi possível salvar. Tente de novo.");
+      return;
+    }
+
+    if (result.message) {
+      toast.success(result.message);
+    }
+    onSuccess?.();
+    router.refresh();
+  }
+
+  const isSubmitting = form.formState.isSubmitting;
+
+  return (
+    <form className="flex flex-col gap-6" onSubmit={form.handleSubmit(handleSubmit)}>
+      <FieldGroup>
+        <Controller
+          name="title"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={`${idPrefix}-title`}>Título</FieldLabel>
+              <Input
+                {...field}
+                id={`${idPrefix}-title`}
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : null}
+            </Field>
+          )}
+        />
+        <Controller
+          name="details"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={`${idPrefix}-details`}>
+                Detalhes (opcional)
+              </FieldLabel>
+              <Textarea
+                {...field}
+                id={`${idPrefix}-details`}
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : null}
+            </Field>
+          )}
+        />
+        <Controller
+          name="eventDate"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={`${idPrefix}-date`}>Data</FieldLabel>
+              <Input
+                {...field}
+                id={`${idPrefix}-date`}
+                type="date"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : null}
+            </Field>
+          )}
+        />
+        <Controller
+          name="eventTime"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={`${idPrefix}-time`}>Horário</FieldLabel>
+              <Input
+                {...field}
+                id={`${idPrefix}-time`}
+                type="time"
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : null}
+            </Field>
+          )}
+        />
+        <Controller
+          name="location"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={`${idPrefix}-location`}>Local</FieldLabel>
+              <Input
+                {...field}
+                id={`${idPrefix}-location`}
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : null}
+            </Field>
+          )}
+        />
+        <EventCapacityField control={form.control} idPrefix={idPrefix} />
+        <EventLayoutField control={form.control} idPrefix={idPrefix} />
+        <EventIllustrationField
+          selectedLayout={selectedLayout}
+          isImageRequired={illustration.isImageRequired}
+          previewUrl={illustration.previewUrl}
+          previewAlt={illustration.previewAlt}
+          hasAspectWarning={illustration.hasAspectWarning}
+          fileError={illustration.fileError}
+          inputId={illustration.inputId}
+          fileInputRef={illustration.fileInputRef}
+          onFileChange={illustration.handleFileChange}
+          onRemove={illustration.handleRemoveIllustration}
+        />
+        <EventConfirmationWindowFields
+          control={form.control}
+          idPrefix={idPrefix}
+        />
+      </FieldGroup>
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
+        {submitLabel}
+      </Button>
+    </form>
+  );
+}
+
+function applyOccasionErrors(
+  form: ReturnType<typeof useForm<EventOccasionFields>>,
+  errors?: EventFieldErrors
+) {
+  if (errors?.title) {
+    form.setError("title", { message: errors.title[0] });
+  }
+  if (errors?.details) {
+    form.setError("details", { message: errors.details[0] });
+  }
+  if (errors?.eventDate) {
+    form.setError("eventDate", { message: errors.eventDate[0] });
+  }
+  if (errors?.eventTime) {
+    form.setError("eventTime", { message: errors.eventTime[0] });
+  }
+  if (errors?.location) {
+    form.setError("location", { message: errors.location[0] });
+  }
+}
+
+function applyFullErrors(
+  form: ReturnType<typeof useForm<EventFields>>,
+  errors: EventFieldErrors | undefined,
+  setFileError: (message: string) => void
+) {
+  if (errors?.title) {
+    form.setError("title", { message: errors.title[0] });
+  }
+  if (errors?.details) {
+    form.setError("details", { message: errors.details[0] });
+  }
+  if (errors?.eventDate) {
+    form.setError("eventDate", { message: errors.eventDate[0] });
+  }
+  if (errors?.eventTime) {
+    form.setError("eventTime", { message: errors.eventTime[0] });
+  }
+  if (errors?.location) {
+    form.setError("location", { message: errors.location[0] });
+  }
+
+  if (errors?.maxGuestCapacity) {
+    form.setError("maxGuestCapacity", {
+      message: errors.maxGuestCapacity[0],
+    });
+  }
+  if (errors?.layout) {
+    form.setError("layout", { message: errors.layout[0] });
+  }
+  if (errors?.confirmationStartsOn) {
+    form.setError("confirmationStartsOn", {
+      message: errors.confirmationStartsOn[0],
+    });
+  }
+  if (errors?.confirmationEndsOn) {
+    form.setError("confirmationEndsOn", {
+      message: errors.confirmationEndsOn[0],
+    });
+  }
+  if (errors?.illustration) {
+    setFileError(errors.illustration[0]);
+  }
 }

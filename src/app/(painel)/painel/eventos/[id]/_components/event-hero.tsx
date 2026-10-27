@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { CalendarIcon, MapPinIcon } from "lucide-react";
 
-import { ConfirmationControls } from "./confirmation-controls";
 import { EventEditDialog } from "./event-edit-dialog";
 import { EventLink } from "./event-link";
-import { EventThemeDialog } from "./event-theme-dialog";
+import { EventSettingsDialog } from "./event-settings-dialog";
 import type { PainelEvent } from "../_data-access/get-event";
 import { ConfirmationStatusBadge } from "../../../_components/confirmation-status-badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,15 +43,14 @@ export function EventHero({ event }: { event: PainelEvent }) {
             </div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
               <EventEditDialog event={event} />
-              <EventThemeDialog event={event} />
+              <EventSettingsDialog event={event} />
             </div>
           </div>
-          <EventLink eventId={event.id} slug={event.slug} />
-          <div className="flex flex-col gap-3 border-t border-border pt-6">
+          <EventLink slug={event.slug} />
+          <div className="border-t border-border pt-6">
             <p className="text-sm text-muted-foreground">
               {event.confirmationMessage}
             </p>
-            <ConfirmationControls event={event} />
           </div>
         </CardContent>
       </Card>

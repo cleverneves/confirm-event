@@ -65,15 +65,28 @@ const EMPTY_THEME_FIELDS: EventThemeFields = {
   blurLevel: null,
 };
 
-export function EventThemeDialog({ event }: { event: PainelEvent }) {
+export function EventThemeDialog({
+  event,
+  embedded = false,
+}: {
+  event: PainelEvent;
+  embedded?: boolean;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" />}>
-        <PaletteIcon data-icon="inline-start" />
-        Personalizar
-      </DialogTrigger>
+      {embedded ? (
+        <Button type="button" variant="outline" onClick={() => setOpen(true)}>
+          <PaletteIcon data-icon="inline-start" />
+          Personalizar
+        </Button>
+      ) : (
+        <DialogTrigger render={<Button variant="outline" />}>
+          <PaletteIcon data-icon="inline-start" />
+          Personalizar
+        </DialogTrigger>
+      )}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Personalizar a página do evento</DialogTitle>

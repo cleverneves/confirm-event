@@ -34,30 +34,12 @@ const formSchema = z.object({
 
 type FormValues = z.input<typeof formSchema>;
 
-export function EventLink({
-  eventId,
-  slug,
-}: {
-  eventId: number;
-  slug: string;
-}) {
+export function EventLink({ slug }: { slug: string }) {
   const [origin, setOrigin] = useState("");
-  const [isEditingSlug, setIsEditingSlug] = useState(false);
-  const router = useRouter();
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      slug,
-    },
-  });
 
   useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
-
-  useEffect(() => {
-    form.reset({ slug });
-  }, [form, slug]);
 
   const currentUrl = origin ? `${origin}/${slug}` : `/${slug}`;
 
@@ -70,30 +52,14 @@ export function EventLink({
     }
   }
 
-  async function handleSubmit(values: z.output<typeof formSchema>) {
-    const result = await updateEventSlugAction(eventId, values);
-
-    if (!result.success) {
-      if (result.errors?.slug) {
-        form.setError("slug", { message: result.errors.slug[0] });
-      }
-      toast.error(result.message ?? "Não foi possível alterar o link.");
-      return;
-    }
-
-    toast.success(result.message ?? "Link atualizado.");
-    setIsEditingSlug(false);
-    router.refresh();
-  }
-
-  const isSubmitting = form.formState.isSubmitting;
-
   return (
     <div className="flex flex-col gap-4 border-t border-border pt-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
           <p className="text-sm text-muted-foreground">Link do evento:</p>
-          <p className="truncate font-medium">{currentUrl}</p>
+          <p className="truncate font-medium" suppressHydrationWarning>
+            {currentUrl}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="button" onClick={handleCopy}>
@@ -111,55 +77,112 @@ export function EventLink({
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {isEditingSlug ? (
-        <form onSubmit={form.handleSubmit(handleSubmit)}>
-          <FieldGroup>
-            <Controller
-              name="slug"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="event-slug">Trecho do link</FieldLabel>
-                  <Input
-                    {...field}
-                    id="event-slug"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
-            <div className="flex flex-wrap gap-2">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
-                Alterar trecho
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  form.reset({ slug });
-                  setIsEditingSlug(false);
+export function EventSlugEditor({
+  eventId,
+  slug,
+}: {
+  eventId: number;
+  slug: string;
+}) {
+  const router = useRouter();
+  const [origin, setOrigin] = useState("");
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      slug,
+    },
+  });
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  const watchedSlug = form.watch("slug");
+  const isDirty = form.formState.isDirty;
+
+  useEffect(() => {
+    if (!isDirty) {
+      form.reset({ slug });
+    }
+  }, [form, slug, isDirty]);
+
+  const displaySlug = isDirty ? watchedSlug : slug;
+  const currentUrl = origin ? `${origin}/${displaySlug}` : `/${displaySlug}`;
+
+  async function handleSubmit(values: z.output<typeof formSchema>) {
+    const result = await updateEventSlugAction(eventId, values);
+
+    if (!result.success) {
+      if (result.errors?.slug) {
+        form.setError("slug", { message: result.errors.slug[0] });
+      }
+      toast.error(result.message ?? "Não foi possível alterar o link.");
+      return;
+    }
+
+    toast.success(result.message ?? "Link atualizado.");
+    form.reset({ slug: values.slug });
+    router.refresh();
+  }
+
+  function handleCancel() {
+    form.reset({ slug });
+  }
+
+  const isSubmitting = form.formState.isSubmitting;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex min-w-0 flex-col gap-1">
+        <p className="text-sm text-muted-foreground">Endereço atual</p>
+        <p className="truncate font-medium" suppressHydrationWarning>
+          {currentUrl}
+        </p>
+      </div>
+      <FieldGroup>
+        <Controller
+          name="slug"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="settings-event-slug">Trecho do link</FieldLabel>
+              <Input
+                {...field}
+                id="settings-event-slug"
+                aria-invalid={fieldState.invalid}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    void form.handleSubmit(handleSubmit)();
+                  }
                 }}
-              >
-                Cancelar
-              </Button>
-            </div>
-          </FieldGroup>
-        </form>
-      ) : (
-        <Button
-          type="button"
-          variant="ghost"
-          className="w-fit"
-          onClick={() => setIsEditingSlug(true)}
-        >
-          Editar trecho do link
-        </Button>
-      )}
+              />
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : null}
+            </Field>
+          )}
+        />
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => void form.handleSubmit(handleSubmit)()}
+          >
+            {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
+            Alterar trecho
+          </Button>
+          {isDirty ? (
+            <Button type="button" variant="outline" onClick={handleCancel}>
+              Cancelar
+            </Button>
+          ) : null}
+        </div>
+      </FieldGroup>
     </div>
   );
 }
