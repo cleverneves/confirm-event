@@ -31,7 +31,8 @@ export function PublicContent({
         details={event.details}
         eventDate={event.eventDate}
         eventTime={event.eventTime}
-        location={event.location}
+        venueName={event.venueName}
+        address={event.address}
         titleColor={theme.effectiveTitleColor}
         textColor={theme.effectiveTextColor}
         backgroundImage={theme.backgroundImage}

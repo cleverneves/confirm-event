@@ -93,7 +93,8 @@ function EventOccasionFieldsForm({
     formData.set("details", values.details);
     formData.set("eventDate", values.eventDate);
     formData.set("eventTime", values.eventTime);
-    formData.set("location", values.location);
+    formData.set("venueName", values.venueName);
+    formData.set("address", values.address);
 
     const result = await onSubmit(formData);
 
@@ -188,14 +189,33 @@ function EventOccasionFieldsForm({
           )}
         />
         <Controller
-          name="location"
+          name="venueName"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={`${idPrefix}-location`}>Local</FieldLabel>
+              <FieldLabel htmlFor={`${idPrefix}-venue-name`}>
+                Nome do espaço
+              </FieldLabel>
               <Input
                 {...field}
-                id={`${idPrefix}-location`}
+                id={`${idPrefix}-venue-name`}
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : null}
+            </Field>
+          )}
+        />
+        <Controller
+          name="address"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={`${idPrefix}-address`}>Endereço</FieldLabel>
+              <Input
+                {...field}
+                id={`${idPrefix}-address`}
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid ? (
@@ -259,7 +279,8 @@ function EventFullFieldsForm({
     formData.set("details", values.details);
     formData.set("eventDate", values.eventDate);
     formData.set("eventTime", values.eventTime);
-    formData.set("location", values.location);
+    formData.set("venueName", values.venueName);
+    formData.set("address", values.address);
     formData.set("maxGuestCapacity", values.maxGuestCapacity);
     formData.set("layout", values.layout);
     formData.set("confirmationStartsOn", values.confirmationStartsOn);
@@ -359,14 +380,33 @@ function EventFullFieldsForm({
           )}
         />
         <Controller
-          name="location"
+          name="venueName"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={`${idPrefix}-location`}>Local</FieldLabel>
+              <FieldLabel htmlFor={`${idPrefix}-venue-name`}>
+                Nome do espaço
+              </FieldLabel>
               <Input
                 {...field}
-                id={`${idPrefix}-location`}
+                id={`${idPrefix}-venue-name`}
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : null}
+            </Field>
+          )}
+        />
+        <Controller
+          name="address"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={`${idPrefix}-address`}>Endereço</FieldLabel>
+              <Input
+                {...field}
+                id={`${idPrefix}-address`}
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid ? (
@@ -418,8 +458,8 @@ function applyOccasionErrors(
   if (errors?.eventTime) {
     form.setError("eventTime", { message: errors.eventTime[0] });
   }
-  if (errors?.location) {
-    form.setError("location", { message: errors.location[0] });
+  if (errors?.address) {
+    form.setError("address", { message: errors.address[0] });
   }
 }
 
@@ -440,8 +480,8 @@ function applyFullErrors(
   if (errors?.eventTime) {
     form.setError("eventTime", { message: errors.eventTime[0] });
   }
-  if (errors?.location) {
-    form.setError("location", { message: errors.location[0] });
+  if (errors?.address) {
+    form.setError("address", { message: errors.address[0] });
   }
 
   if (errors?.maxGuestCapacity) {

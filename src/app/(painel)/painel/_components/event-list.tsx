@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { MapPinIcon } from "lucide-react";
 
 import type { EventListItem } from "../_data-access/get-events";
+import { EventPlace } from "./event-place";
 import { EventIllustration } from "@/components/event-illustration";
 import { ConfirmationStatusBadge } from "./confirmation-status-badge";
 import { Button } from "@/components/ui/button";
@@ -93,10 +93,11 @@ export function EventList({ events }: { events: EventListItem[] }) {
             <p className="text-sm text-muted-foreground">
               {formatEventDate(event.eventDate)} · {formatEventTime(event.eventTime)}
             </p>
-            <p className="flex items-center gap-2 text-sm text-muted-foreground [&_svg]:size-4">
-              <MapPinIcon />
-              {event.location}
-            </p>
+            <EventPlace
+              venueName={event.venueName}
+              address={event.address}
+              className="text-sm text-muted-foreground"
+            />
           </Link>
         </li>
       ))}

@@ -22,7 +22,8 @@ export type PainelEvent = {
   details: string | null;
   eventDate: string;
   eventTime: string;
-  location: string;
+  venueName: string | null;
+  address: string;
   slug: string;
   /** Capacidade máxima de convidados; nulo significa sem limite. */
   maxGuestCapacity: number | null;
@@ -66,7 +67,7 @@ export async function getPainelEvent(eventId: number) {
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id, title, details, event_date, event_time, location, slug, max_guest_capacity, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, background_mode, blur_level, illustration_content_type, page_layout, updated_at"
+      "id, title, details, event_date, event_time, venue_name, address, slug, max_guest_capacity, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, background_mode, blur_level, illustration_content_type, page_layout, updated_at"
     )
     .eq("id", eventId)
     .maybeSingle();
@@ -89,7 +90,8 @@ export async function getPainelEvent(eventId: number) {
     details: data.details,
     eventDate: data.event_date,
     eventTime: data.event_time,
-    location: data.location,
+    venueName: data.venue_name,
+    address: data.address,
     slug: data.slug,
     maxGuestCapacity: data.max_guest_capacity,
     confirmationStartsOn: data.confirmation_starts_on,

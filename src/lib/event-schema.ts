@@ -19,7 +19,8 @@ const eventFieldsObject = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe um dia válido"),
   eventTime: z.string().regex(/^\d{2}:\d{2}$/, "Informe um horário válido"),
-  location: z.string().trim().min(1, "Informe o local"),
+  venueName: z.string().trim(),
+  address: z.string().trim().min(1, "Informe o endereço"),
   maxGuestCapacity: z.string(),
   layout: z.enum(PAGE_LAYOUTS),
   confirmationStartsOn: z.string(),
@@ -33,7 +34,8 @@ const eventOccasionObject = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe um dia válido"),
   eventTime: z.string().regex(/^\d{2}:\d{2}$/, "Informe um horário válido"),
-  location: z.string().trim().min(1, "Informe o local"),
+  venueName: z.string().trim(),
+  address: z.string().trim().min(1, "Informe o endereço"),
 });
 
 const eventSettingsObject = z.object({
@@ -100,7 +102,8 @@ export function eventOccasionFromFormData(formData: FormData): EventOccasionFiel
     details: String(formData.get("details") ?? ""),
     eventDate: String(formData.get("eventDate") ?? ""),
     eventTime: String(formData.get("eventTime") ?? ""),
-    location: String(formData.get("location") ?? ""),
+    venueName: String(formData.get("venueName") ?? ""),
+    address: String(formData.get("address") ?? ""),
   };
 }
 
@@ -185,7 +188,8 @@ export type EventFieldErrors = {
   details?: string[];
   eventDate?: string[];
   eventTime?: string[];
-  location?: string[];
+  venueName?: string[];
+  address?: string[];
   maxGuestCapacity?: string[];
   layout?: string[];
   confirmationStartsOn?: string[];
@@ -199,7 +203,8 @@ export function eventFieldsFromFormData(formData: FormData): EventFields {
     details: String(formData.get("details") ?? ""),
     eventDate: String(formData.get("eventDate") ?? ""),
     eventTime: String(formData.get("eventTime") ?? ""),
-    location: String(formData.get("location") ?? ""),
+    venueName: String(formData.get("venueName") ?? ""),
+    address: String(formData.get("address") ?? ""),
     maxGuestCapacity: String(formData.get("maxGuestCapacity") ?? ""),
     layout: String(formData.get("layout") ?? "") as EventFields["layout"],
     confirmationStartsOn: String(formData.get("confirmationStartsOn") ?? ""),
@@ -207,7 +212,19 @@ export function eventFieldsFromFormData(formData: FormData): EventFields {
   };
 }
 
-export function confirmationWindowColumns(data: EventFields) {
+export function venueColumns(data: { venueName: string; address: string }) {
+  const trimmedName = data.venueName.trim();
+
+  return {
+    venue_name: trimmedName === "" ? null : trimmedName,
+    address: data.address,
+  };
+}
+
+export function confirmationWindowColumns(data: {
+  confirmationStartsOn: string;
+  confirmationEndsOn: string;
+}) {
   const startsOn = data.confirmationStartsOn.trim();
   const endsOn = data.confirmationEndsOn.trim();
 
@@ -245,7 +262,7 @@ function parseMaxGuestCapacity(value: string): number | null | undefined {
   return capacity;
 }
 
-export function maxGuestCapacityColumn(data: EventFields) {
+export function maxGuestCapacityColumn(data: { maxGuestCapacity: string }) {
   return {
     max_guest_capacity: parseMaxGuestCapacity(data.maxGuestCapacity) ?? null,
   };

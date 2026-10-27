@@ -67,7 +67,7 @@ Variáveis: `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` (fallba
 
 Migrations em `supabase/migrations/`. A mais recente (`20261001180000_event_theme.sql`) acrescenta o tema visual da página pública.
 
-**`events`:** `id`, `title`, `details` (nullable), `event_date`, `event_time`, `location`, `slug` (atual), `confirmation_starts_on` / `confirmation_ends_on` (as duas nulas ou as duas preenchidas; início anterior ao fim; ambas anteriores a `event_date`), `confirmation_manually_closed` (default false), `background_color` / `title_color` / `button_color` (nullable, hex `#rrggbb`; null = tema padrão da página pública naquela posição), timestamps. Título e local não podem ser só espaços. Slug: `^[a-z0-9]+(?:-[a-z0-9]+)*$`. O estado aberto/encerrado não é coluna: é calculado em São Paulo a partir da data do evento, da janela e do marcador manual.
+**`events`:** `id`, `title`, `details` (nullable), `event_date`, `event_time`, `venue_name` (nullable), `address` (obrigatório), `slug` (atual), `confirmation_starts_on` / `confirmation_ends_on` (as duas nulas ou as duas preenchidas; início anterior ao fim; ambas anteriores a `event_date`), `confirmation_manually_closed` (default false), `background_color` / `title_color` / `button_color` (nullable, hex `#rrggbb`; null = tema padrão da página pública naquela posição), timestamps. Título e endereço não podem ser só espaços; nome do espaço opcional. Slug: `^[a-z0-9]+(?:-[a-z0-9]+)*$`. O estado aberto/encerrado não é coluna: é calculado em São Paulo a partir da data do evento, da janela e do marcador manual.
 
 **`event_slugs`:** histórico de trechos (`slug` PK → `event_id`). Exclusão do evento faz cascade. A página pública resolve o slug aqui; se `events.slug` for outro, redireciona.
 

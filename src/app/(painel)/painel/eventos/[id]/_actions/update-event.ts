@@ -12,6 +12,7 @@ import {
   eventOccasionFromFormData,
   isOccasionDateInvalidForSavedWindow,
   makeEventOccasionSchema,
+  venueColumns,
   type EventFieldErrors,
 } from "@/lib/event-schema";
 
@@ -95,7 +96,7 @@ export async function updateEventAction(
       details: validation.data.details.trim() || null,
       event_date: validation.data.eventDate,
       event_time: validation.data.eventTime,
-      location: validation.data.location,
+      ...venueColumns(validation.data),
       updated_at: new Date().toISOString(),
     })
     .eq("id", eventId)

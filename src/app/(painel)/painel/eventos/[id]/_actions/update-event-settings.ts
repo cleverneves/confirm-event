@@ -83,26 +83,12 @@ export async function updateEventSettingsAction(
     };
   }
 
-  const window = confirmationWindowColumns({
-    ...validation.data,
-    title: "",
-    details: "",
-    eventDate: current.event_date,
-    eventTime: "00:00",
-    location: "",
-  });
+  const window = confirmationWindowColumns(validation.data);
 
   const { data: updated, error } = await supabase
     .from("events")
     .update({
-      ...maxGuestCapacityColumn({
-        ...validation.data,
-        title: "",
-        details: "",
-        eventDate: current.event_date,
-        eventTime: "00:00",
-        location: "",
-      }),
+      ...maxGuestCapacityColumn(validation.data),
       confirmation_starts_on: window.confirmation_starts_on,
       confirmation_ends_on: window.confirmation_ends_on,
       page_layout: resolved.pageLayout,

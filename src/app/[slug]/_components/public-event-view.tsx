@@ -15,7 +15,8 @@ export function PublicEventView({
   details,
   eventDate,
   eventTime,
-  location,
+  venueName,
+  address,
   titleColor,
   textColor,
   backgroundImage,
@@ -30,7 +31,8 @@ export function PublicEventView({
   details: string | null;
   eventDate: string;
   eventTime: string;
-  location: string;
+  venueName: string | null;
+  address: string;
   /** Cor efetiva do nome do evento (só usada no layout personalizado). */
   titleColor: string;
   /** Cor efetiva de detalhes, data/horário e local (só usada no layout personalizado). */
@@ -122,7 +124,10 @@ export function PublicEventView({
                   )
                 )}
               </p>
-              <p style={textStyle}>{location}</p>
+              {venueName?.trim() ? (
+                <p style={textStyle}>{venueName.trim()}</p>
+              ) : null}
+              <p style={textStyle}>{address}</p>
             </section>
 
             {children}

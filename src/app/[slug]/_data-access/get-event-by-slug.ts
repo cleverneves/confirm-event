@@ -18,7 +18,8 @@ export type PublicEvent = {
   details: string | null;
   eventDate: string;
   eventTime: string;
-  location: string;
+  venueName: string | null;
+  address: string;
   currentSlug: string;
   acceptsConfirmation: boolean;
   /** Confirmação aberta e total de confirmados na capacidade ou acima dela. */
@@ -65,7 +66,7 @@ export async function getPublicEvent(slug: string) {
   const { data, error } = await supabase
     .from("event_slugs")
     .select(
-      "slug, events(id, title, details, event_date, event_time, location, slug, max_guest_capacity, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, background_mode, blur_level, illustration_content_type, page_layout, updated_at)"
+      "slug, events(id, title, details, event_date, event_time, venue_name, address, slug, max_guest_capacity, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, background_color_1, background_color_2, title_color, text_color, background_mode, blur_level, illustration_content_type, page_layout, updated_at)"
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -98,7 +99,8 @@ export async function getPublicEvent(slug: string) {
     details: event.details,
     eventDate: event.event_date,
     eventTime: event.event_time,
-    location: event.location,
+    venueName: event.venue_name,
+    address: event.address,
     currentSlug: event.slug,
     acceptsConfirmation,
     isSoldOut,

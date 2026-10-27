@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { CalendarIcon, MapPinIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 
 import { EventEditDialog } from "./event-edit-dialog";
+import { EventPlace } from "../../../_components/event-place";
 import { EventLink } from "./event-link";
 import { EventSettingsDialog } from "./event-settings-dialog";
 import type { PainelEvent } from "../_data-access/get-event";
@@ -36,10 +37,11 @@ export function EventHero({ event }: { event: PainelEvent }) {
                   isOpen={event.confirmation.status === "open"}
                 />
               </div>
-              <p className="flex items-center gap-2 text-muted-foreground [&_svg]:size-4">
-                <MapPinIcon />
-                {event.location}
-              </p>
+              <EventPlace
+                venueName={event.venueName}
+                address={event.address}
+                className="text-muted-foreground"
+              />
             </div>
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
               <EventEditDialog event={event} />

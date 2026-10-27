@@ -319,7 +319,8 @@ function EventThemeForm({
           details={event.details}
           eventDate={event.eventDate}
           eventTime={event.eventTime}
-          location={event.location}
+          venueName={event.venueName}
+          address={event.address}
           titleColor={effectiveTitle}
           textColor={effectiveText}
           backgroundImage={backgroundGradient(effectiveColor1, effectiveColor2)}

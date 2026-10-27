@@ -14,6 +14,7 @@ import {
   createEventSchema,
   eventFieldsFromFormData,
   maxGuestCapacityColumn,
+  venueColumns,
   type EventFieldErrors,
 } from "@/lib/event-schema";
 import { nextAvailableSlug } from "@/lib/slug";
@@ -83,7 +84,7 @@ export async function createEventAction(
       details,
       event_date: validation.data.eventDate,
       event_time: validation.data.eventTime,
-      location: validation.data.location,
+      ...venueColumns(validation.data),
       slug,
       created_by: user.id,
       ...maxGuestCapacityColumn(validation.data),

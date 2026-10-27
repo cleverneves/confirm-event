@@ -8,7 +8,8 @@ export type Database = {
           details: string | null;
           event_date: string;
           event_time: string;
-          location: string;
+          address: string;
+          venue_name: string | null;
           slug: string;
           confirmation_starts_on: string | null;
           confirmation_ends_on: string | null;
@@ -33,7 +34,8 @@ export type Database = {
           details?: string | null;
           event_date: string;
           event_time: string;
-          location: string;
+          address: string;
+          venue_name: string | null;
           slug: string;
           confirmation_starts_on?: string | null;
           confirmation_ends_on?: string | null;
@@ -58,7 +60,8 @@ export type Database = {
           details?: string | null;
           event_date?: string;
           event_time?: string;
-          location?: string;
+          address?: string;
+          venue_name?: string | null;
           slug?: string;
           confirmation_starts_on?: string | null;
           confirmation_ends_on?: string | null;

@@ -31,14 +31,15 @@ export function EventEditDialog({ event }: { event: PainelEvent }) {
         </DialogHeader>
         {open ? (
           <EventFieldsForm
-            key={`${event.title}-${event.eventDate}-${event.eventTime}-${event.location}-${event.details ?? ""}`}
+            key={`${event.title}-${event.eventDate}-${event.eventTime}-${event.venueName ?? ""}-${event.address}-${event.details ?? ""}`}
             mode="occasion"
             defaultValues={{
               title: event.title,
               details: event.details ?? "",
               eventDate: event.eventDate,
               eventTime: formatEventTime(event.eventTime),
-              location: event.location,
+              venueName: event.venueName ?? "",
+              address: event.address,
             }}
             currentDate={event.eventDate}
             submitLabel="Salvar"

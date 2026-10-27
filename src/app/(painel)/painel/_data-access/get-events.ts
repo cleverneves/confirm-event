@@ -12,7 +12,8 @@ export type EventListItem = {
   title: string;
   eventDate: string;
   eventTime: string;
-  location: string;
+  venueName: string | null;
+  address: string;
   slug: string;
   /** Capacidade máxima de convidados; nulo significa sem limite. */
   maxGuestCapacity: number | null;
@@ -111,7 +112,7 @@ export async function getEvents() {
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id, title, event_date, event_time, location, slug, max_guest_capacity, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, illustration_content_type, page_layout, updated_at"
+      "id, title, event_date, event_time, venue_name, address, slug, max_guest_capacity, confirmation_starts_on, confirmation_ends_on, confirmation_manually_closed, illustration_content_type, page_layout, updated_at"
     )
     .or(accessFilters.join(","))
     .order("event_date", { ascending: true })
@@ -149,7 +150,8 @@ export async function getEvents() {
         title: event.title,
         eventDate: event.event_date,
         eventTime: event.event_time,
-        location: event.location,
+        venueName: event.venue_name,
+        address: event.address,
         slug: event.slug,
         maxGuestCapacity: event.max_guest_capacity,
         confirmationOpen: confirmation.status === "open",
