@@ -3,6 +3,7 @@
 import type { Control, FieldValues, Path } from "react-hook-form";
 import { Controller } from "react-hook-form";
 
+import { PageLayoutMark } from "./page-layout-mark";
 import { EventIllustration } from "@/components/event-illustration";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,10 @@ import {
   illustrationAspect,
   illustrationAspectWarning,
   illustrationFieldHelp,
+  pageLayoutLabel,
   type EventPageLayout,
 } from "@/lib/event-illustration";
+import { cn } from "@/lib/utils";
 
 type PublicationShape = {
   layout: EventPageLayout;
@@ -31,6 +34,20 @@ type PublicationShape = {
   confirmationStartsOn: string;
   confirmationEndsOn: string;
 };
+
+const LAYOUT_OPTIONS: {
+  value: EventPageLayout;
+  description: string;
+}[] = [
+    {
+      value: "personalized",
+      description: "Edita todas as informações.",
+    },
+    {
+      value: "image_only",
+      description: "Envie a imagem do evento.",
+    },
+  ];
 
 export function EventLayoutField<T extends FieldValues & PublicationShape>({
   control,
@@ -50,33 +67,37 @@ export function EventLayoutField<T extends FieldValues & PublicationShape>({
             value={field.value}
             onValueChange={field.onChange}
             aria-invalid={fieldState.invalid}
+            className="grid grid-cols-2 gap-3"
           >
-            <FieldLabel htmlFor={`${idPrefix}-layout-personalized`}>
-              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-                <RadioGroupItem
-                  value="personalized"
-                  id={`${idPrefix}-layout-personalized`}
-                />
-                <FieldContent>
-                  <FieldTitle>Personalizado</FieldTitle>
-                  <FieldDescription>
-                    Exibe todas as informações editáveis.
-                  </FieldDescription>
-                </FieldContent>
-              </Field>
-            </FieldLabel>
-            <FieldLabel htmlFor={`${idPrefix}-layout-image-only`}>
-              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-                <RadioGroupItem
-                  value="image_only"
-                  id={`${idPrefix}-layout-image-only`}
-                />
-                <FieldContent>
-                  <FieldTitle>Somente imagem</FieldTitle>
-                  <FieldDescription>Exibe a imagem do evento.</FieldDescription>
-                </FieldContent>
-              </Field>
-            </FieldLabel>
+            {LAYOUT_OPTIONS.map((option) => {
+              const inputId = `${idPrefix}-layout-${option.value === "personalized" ? "personalized" : "image-only"}`;
+              const isSelected = field.value === option.value;
+
+              return (
+                <FieldLabel key={option.value} htmlFor={inputId} className="min-w-0">
+                  <div
+                    className={cn(
+                      "flex min-w-0 cursor-pointer flex-col items-center gap-3 rounded-lg bg-card p-4 text-center shadow-panel transition-shadow",
+                      isSelected
+                        ? "ring-2 ring-primary"
+                        : "ring-1 ring-muted-foreground/20"
+                    )}
+                    data-invalid={fieldState.invalid}
+                  >
+                    <RadioGroupItem
+                      value={option.value}
+                      id={inputId}
+                      className="sr-only"
+                    />
+                    <PageLayoutMark layout={option.value} size="choice" />
+                    <FieldContent className="min-w-0 items-center">
+                      <FieldTitle>{pageLayoutLabel(option.value)}</FieldTitle>
+                      <FieldDescription>{option.description}</FieldDescription>
+                    </FieldContent>
+                  </div>
+                </FieldLabel>
+              );
+            })}
           </RadioGroup>
           {fieldState.invalid ? (
             <FieldError errors={[fieldState.error]} />
@@ -191,7 +212,7 @@ export function EventConfirmationWindowFields<
 }) {
   return (
     <FieldSet>
-      <FieldLegend>Janela de confirmação (opcional)</FieldLegend>
+      <FieldLegend>Período de confirmação (opcional)</FieldLegend>
       <FieldDescription>
         Início e fim que a confirmação fica disponível para o convidado.
       </FieldDescription>

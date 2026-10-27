@@ -13,6 +13,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { formatEventDate, formatEventTime } from "@/lib/event-date";
+import { PageLayoutMark } from "./page-layout-mark";
 import { illustrationAspect, pageLayoutLabel } from "@/lib/event-illustration";
 import { cn } from "@/lib/utils";
 
@@ -63,8 +64,10 @@ export function EventList({ events }: { events: EventListItem[] }) {
                   )}
                 />
               ) : null}
-              <p className="text-sm font-medium text-muted-foreground">
-                {pageLayoutLabel(event.pageLayout)}
+              <p className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                <span>Layout:</span>
+                <PageLayoutMark layout={event.pageLayout} size="list" />
+                <span>{pageLayoutLabel(event.pageLayout)}</span>
               </p>
             </div>
             <div className="flex items-start justify-between gap-3">

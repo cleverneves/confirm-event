@@ -42,7 +42,7 @@ export function parsePageLayout(value: unknown): EventPageLayout {
 
 /** Nome visível do layout da página pública. */
 export function pageLayoutLabel(layout: EventPageLayout) {
-  return layout === "image_only" ? "Somente imagem" : "Personalizado";
+  return layout === "image_only" ? "Imagem" : "Personalizado";
 }
 
 export function illustrationAspect(layout: EventPageLayout): IllustrationAspect {

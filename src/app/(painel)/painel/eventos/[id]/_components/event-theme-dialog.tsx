@@ -35,7 +35,10 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Spinner } from "@/components/ui/spinner";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { eventIllustrationUrl } from "@/lib/event-illustration";
+import {
+  eventIllustrationUrl,
+  type EventPageLayout,
+} from "@/lib/event-illustration";
 import {
   backgroundGradient,
   buttonTextColor,
@@ -68,11 +71,24 @@ const EMPTY_THEME_FIELDS: EventThemeFields = {
 export function EventThemeDialog({
   event,
   embedded = false,
+  selectedLayout,
+  previewImageUrl,
 }: {
   event: PainelEvent;
   embedded?: boolean;
+  /** Card marcado em Configurações; padrão é o layout já salvo. */
+  selectedLayout?: EventPageLayout;
+  /** Imagem válida para o card marcado nesta visita; omitir usa a imagem salva. */
+  previewImageUrl?: string | null;
 }) {
   const [open, setOpen] = useState(false);
+  const resolvedSelectedLayout = selectedLayout ?? event.pageLayout;
+  const resolvedPreviewImageUrl =
+    previewImageUrl !== undefined
+      ? previewImageUrl
+      : event.hasIllustration
+        ? eventIllustrationUrl(event.slug, event.updatedAt)
+        : null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -94,6 +110,8 @@ export function EventThemeDialog({
         <EventThemeForm
           key={`${event.backgroundColor1 ?? ""}-${event.backgroundColor2 ?? ""}-${event.titleColor ?? ""}-${event.textColor ?? ""}-${event.backgroundMode}-${event.blurLevel ?? ""}-${event.pageLayout}`}
           event={event}
+          selectedLayout={resolvedSelectedLayout}
+          previewImageUrl={resolvedPreviewImageUrl}
           onSuccess={() => setOpen(false)}
         />
       </DialogContent>
@@ -103,15 +121,19 @@ export function EventThemeDialog({
 
 function EventThemeForm({
   event,
+  selectedLayout,
+  previewImageUrl,
   onSuccess,
 }: {
   event: PainelEvent;
+  selectedLayout: EventPageLayout;
+  previewImageUrl: string | null;
   onSuccess: () => void;
 }) {
   const router = useRouter();
   const [isRestoring, setIsRestoring] = useState(false);
-  const isPersonalized = event.pageLayout === "personalized";
-  const isImageOnly = event.pageLayout === "image_only";
+  const isPersonalized = selectedLayout === "personalized";
+  const isImageOnly = selectedLayout === "image_only";
   const form = useForm<EventThemeFields>({
     resolver: zodResolver(eventThemeFormSchema),
     defaultValues: toThemeFormValues({
@@ -324,14 +346,10 @@ function EventThemeForm({
           titleColor={effectiveTitle}
           textColor={effectiveText}
           backgroundImage={backgroundGradient(effectiveColor1, effectiveColor2)}
-          layout={event.pageLayout}
+          layout={selectedLayout}
           backgroundMode={isBlurSelected ? "blur" : "gradient"}
           blurLevel={effectiveBlurLevel}
-          imageUrl={
-            event.hasIllustration
-              ? eventIllustrationUrl(event.slug, event.updatedAt)
-              : null
-          }
+          imageUrl={previewImageUrl}
         >
           <ConfirmationCard>
             <FieldGroup>

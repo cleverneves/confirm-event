@@ -144,7 +144,12 @@ export function EventSettingsForm({
       </form>
 
       <ConfirmationControls event={event} />
-      <EventThemeDialog event={event} embedded />
+      <EventThemeDialog
+        event={event}
+        embedded
+        selectedLayout={selectedLayout}
+        previewImageUrl={illustration.previewUrl}
+      />
     </div>
   );
 }

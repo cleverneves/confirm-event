@@ -58,14 +58,14 @@ function CloseConfirmationButton({ eventId }: { eventId: number }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button variant="outline" className="w-fit" />}>
-        Encerrar agora
+        Encerrar periodo
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Encerrar a confirmação agora?</AlertDialogTitle>
+          <AlertDialogTitle>Encerrar o período de confirmação?</AlertDialogTitle>
           <AlertDialogDescription>
-            O link deixa de aceitar nomes novos. Quem já confirmou permanece na
-            lista. Você pode reativar depois, se o prazo ainda permitir.
+            Deixa de aceitar novas confirmações. Quem já confirmou permanece na
+            lista. Você ainda pode reativar se tiver dentro da data para o evento.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
