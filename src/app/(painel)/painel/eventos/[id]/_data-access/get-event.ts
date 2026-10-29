@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import {
   resolveEventConfirmation,
   type ConfirmationResolution,
@@ -57,7 +59,9 @@ export function parseEventId(value: string) {
   return id;
 }
 
-export async function getPainelEvent(eventId: number) {
+export const getPainelEvent = cache(async function getPainelEvent(
+  eventId: number
+) {
   const { supabase, role } = await requireEventAccess(eventId);
 
   if (!role) {
@@ -109,4 +113,4 @@ export async function getPainelEvent(eventId: number) {
     hasIllustration: Boolean(data.illustration_content_type),
     updatedAt: data.updated_at,
   } satisfies PainelEvent;
-}
+});

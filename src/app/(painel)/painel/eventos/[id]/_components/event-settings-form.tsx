@@ -38,7 +38,7 @@ export function EventSettingsForm({
   onSuccess,
 }: {
   event: PainelEvent;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }) {
   const router = useRouter();
   const schema = useMemo(
@@ -100,7 +100,7 @@ export function EventSettingsForm({
     if (result.message) {
       toast.success(result.message);
     }
-    onSuccess();
+    onSuccess?.();
     router.refresh();
   }
 
