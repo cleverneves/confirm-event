@@ -7,7 +7,7 @@ import {
   requireEventAccess,
 } from "@/lib/auth/event-access";
 import {
-  confirmationPanelMessage,
+  confirmationReopenToastMessage,
   resolveConfirmation,
 } from "@/lib/confirmation-window";
 import { todayInSaoPaulo } from "@/lib/event-date";
@@ -151,6 +151,9 @@ export async function reopenConfirmationAction(
 
   return {
     success: true,
-    message: confirmationPanelMessage(confirmation, event.confirmation_starts_on),
+    message: confirmationReopenToastMessage(
+      confirmation,
+      event.confirmation_starts_on
+    ),
   };
 }

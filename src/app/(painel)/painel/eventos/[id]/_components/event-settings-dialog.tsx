@@ -13,6 +13,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function settingsFormKey(event: PainelEvent) {
   return [
@@ -29,10 +34,24 @@ export function EventSettingsDialog({ event }: { event: PainelEvent }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" />}>
-        <SettingsIcon data-icon="inline-start" />
-        Configurações
-      </DialogTrigger>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <DialogTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Configurações"
+                />
+              }
+            />
+          }
+        >
+          <SettingsIcon />
+        </TooltipTrigger>
+        <TooltipContent>Configurações</TooltipContent>
+      </Tooltip>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Configurações do evento</DialogTitle>

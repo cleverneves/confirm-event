@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 
+import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -26,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${plusJakartaSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        {children}
+        <Providers>{children}</Providers>
         <Toaster />
       </body>
     </html>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ClockIcon, TriangleAlertIcon } from "lucide-react";
 
 import { EventEditDialog } from "./event-edit-dialog";
 import { EventPlace } from "../../../_components/event-place";
@@ -25,10 +25,6 @@ export function EventHero({ event }: { event: PainelEvent }) {
         <CardContent className="flex flex-col gap-6">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex min-w-0 flex-col gap-3">
-              <p className="flex items-center gap-2 text-sm text-muted-foreground [&_svg]:size-4">
-                <CalendarIcon />
-                {formatEventDate(event.eventDate)} · {formatEventTime(event.eventTime)}
-              </p>
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="font-heading text-3xl leading-tight tracking-tight">
                   {event.title}
@@ -37,6 +33,14 @@ export function EventHero({ event }: { event: PainelEvent }) {
                   isOpen={event.confirmation.status === "open"}
                 />
               </div>
+              <p className="flex min-w-0 items-start gap-2 text-sm text-muted-foreground [&_svg]:size-4 [&_svg]:shrink-0">
+                <CalendarIcon aria-hidden="true" />
+                {formatEventDate(event.eventDate)}
+              </p>
+              <p className="flex min-w-0 items-start gap-2 text-sm text-muted-foreground [&_svg]:size-4 [&_svg]:shrink-0">
+                <ClockIcon aria-hidden="true" />
+                {formatEventTime(event.eventTime)}
+              </p>
               <EventPlace
                 venueName={event.venueName}
                 address={event.address}
@@ -50,7 +54,8 @@ export function EventHero({ event }: { event: PainelEvent }) {
           </div>
           <EventLink slug={event.slug} />
           <div className="border-t border-border pt-6">
-            <p className="text-sm text-muted-foreground">
+            <p className="flex min-w-0 items-start gap-2 text-sm text-muted-foreground [&_svg]:size-4 [&_svg]:shrink-0">
+              <TriangleAlertIcon aria-hidden="true" />
               {event.confirmationMessage}
             </p>
           </div>

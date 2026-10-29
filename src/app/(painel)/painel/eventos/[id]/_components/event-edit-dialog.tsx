@@ -14,6 +14,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { formatEventTime } from "@/lib/event-date";
 
 export function EventEditDialog({ event }: { event: PainelEvent }) {
@@ -21,10 +26,24 @@ export function EventEditDialog({ event }: { event: PainelEvent }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" />}>
-        <PencilIcon data-icon="inline-start" />
-        Editar
-      </DialogTrigger>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <DialogTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Editar"
+                />
+              }
+            />
+          }
+        >
+          <PencilIcon />
+        </TooltipTrigger>
+        <TooltipContent>Editar</TooltipContent>
+      </Tooltip>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Editar evento</DialogTitle>

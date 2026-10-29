@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CopyIcon, ExternalLinkIcon } from "lucide-react";
+import { CopyIcon, ExternalLinkIcon, LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -19,6 +19,11 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { isValidSlug, normalizeSlug } from "@/lib/slug";
 
 const formSchema = z.object({
@@ -55,17 +60,28 @@ export function EventLink({ slug }: { slug: string }) {
   return (
     <div className="flex flex-col gap-4 border-t border-border pt-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-          <p className="text-sm text-muted-foreground">Link do evento:</p>
-          <p className="truncate font-medium" suppressHydrationWarning>
+        <div className="flex min-w-0 items-center gap-2 text-muted-foreground [&_svg]:size-4 [&_svg]:shrink-0">
+          <LinkIcon aria-hidden="true" />
+          <p className="min-w-0 truncate font-medium" suppressHydrationWarning>
             {currentUrl}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" onClick={handleCopy}>
-            <CopyIcon data-icon="inline-start" />
-            Copiar Link
-          </Button>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  type="button"
+                  size="icon"
+                  aria-label="Copiar Link"
+                  onClick={handleCopy}
+                />
+              }
+            >
+              <CopyIcon />
+            </TooltipTrigger>
+            <TooltipContent>Copiar Link</TooltipContent>
+          </Tooltip>
           <Button
             type="button"
             variant="outline"

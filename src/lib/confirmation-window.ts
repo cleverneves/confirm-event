@@ -75,13 +75,25 @@ export function resolveConfirmation({
   };
 }
 
+/** Frase exibida no toast ao reativar a confirmação (estado aberto mantém redação anterior). */
+export function confirmationReopenToastMessage(
+  resolution: ConfirmationResolution,
+  startsOn: string | null
+) {
+  if (resolution.reason === "open") {
+    return `A confirmação para o evento está aberta até ${formatEventDate(resolution.lastOpenDay)}.`;
+  }
+
+  return confirmationPanelMessage(resolution, startsOn);
+}
+
 export function confirmationPanelMessage(
   resolution: ConfirmationResolution,
   startsOn: string | null
 ) {
   switch (resolution.reason) {
     case "open":
-      return `A confirmação para o evento está aberta até ${formatEventDate(resolution.lastOpenDay)}.`;
+      return `A confirmação está aberta até ${formatEventDate(resolution.lastOpenDay)}.`;
     case "manual":
       return `Você encerrou a confirmação para o evento. Poderá reativar até ${formatEventDate(resolution.lastOpenDay)}.`;
     case "before_start":
