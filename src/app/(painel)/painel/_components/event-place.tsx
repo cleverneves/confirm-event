@@ -7,6 +7,8 @@ type EventPlaceProps = {
   address: string;
   className?: string;
   textClassName?: string;
+  /** Lista Meus Eventos: nome e endereço na mesma linha. */
+  variant?: "block" | "inline";
 };
 
 export function EventPlace({
@@ -14,6 +16,7 @@ export function EventPlace({
   address,
   className,
   textClassName,
+  variant = "block",
 }: EventPlaceProps) {
   const trimmedName = venueName?.trim();
 
@@ -25,10 +28,24 @@ export function EventPlace({
       )}
     >
       <MapPinIcon aria-hidden="true" />
-      <div className={cn("min-w-0 break-words", textClassName)}>
-        {trimmedName ? <p>{trimmedName}</p> : null}
-        <p>{address}</p>
-      </div>
+      {variant === "inline" ? (
+        <p className={cn("min-w-0 break-words", textClassName)}>
+          {trimmedName ? (
+            <>
+              {trimmedName}
+              <span aria-hidden="true"> · </span>
+              {address}
+            </>
+          ) : (
+            address
+          )}
+        </p>
+      ) : (
+        <div className={cn("min-w-0 break-words", textClassName)}>
+          {trimmedName ? <p>{trimmedName}</p> : null}
+          <p>{address}</p>
+        </div>
+      )}
     </div>
   );
 }

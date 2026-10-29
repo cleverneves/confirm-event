@@ -1,6 +1,5 @@
 import { resolveEventConfirmation } from "@/lib/confirmation-window";
 import { requireOrganizer } from "@/lib/auth/require-organizer";
-import { organizerDisplayName } from "@/lib/organizer-display";
 import {
   eventIllustrationUrl,
   parsePageLayout,
@@ -22,8 +21,6 @@ export type EventListItem = {
   imageUrl: string | null;
   /** Total de confirmações do evento; nulo quando não pôde ser obtido. */
   confirmedCount: number | null;
-  /** Nome do criador (ou e-mail, sem nome gravado); nulo só em evento legado sem criador. */
-  creatorName: string | null;
 };
 
 type OrganizerSupabase = Awaited<ReturnType<typeof requireOrganizer>>["supabase"];
@@ -47,43 +44,6 @@ async function countConfirmations(
   } catch {
     return null;
   }
-}
-
-/** Nome do criador por evento. Eventos sem rótulo (legado sem criador) ficam de fora. */
-async function loadCreatorNames(
-  supabase: OrganizerSupabase,
-  eventIds: number[]
-): Promise<Map<number, string>> {
-  const names = new Map<number, string>();
-
-  if (eventIds.length === 0) {
-    return names;
-  }
-
-  try {
-    const { data, error } = await supabase.rpc("event_creator_labels", {
-      p_event_ids: eventIds,
-    });
-
-    if (error) {
-      return names;
-    }
-
-    for (const label of data ?? []) {
-      names.set(
-        label.label_event_id,
-        organizerDisplayName({
-          firstName: label.first_name,
-          lastName: label.last_name,
-          email: label.creator_email,
-        })
-      );
-    }
-  } catch {
-    // Sem rótulo, o card não mostra a linha "criado por:".
-  }
-
-  return names;
 }
 
 export async function getEvents() {
@@ -126,13 +86,9 @@ export async function getEvents() {
   }
 
   const rows = data ?? [];
-  const [confirmedCounts, creatorNames] = await Promise.all([
-    Promise.all(rows.map((event) => countConfirmations(supabase, event.id))),
-    loadCreatorNames(
-      supabase,
-      rows.map((event) => event.id)
-    ),
-  ]);
+  const confirmedCounts = await Promise.all(
+    rows.map((event) => countConfirmations(supabase, event.id))
+  );
 
   return {
     events: rows.map((event, index) => {
@@ -146,7 +102,6 @@ export async function getEvents() {
       return {
         id: event.id,
         confirmedCount: confirmedCounts[index],
-        creatorName: creatorNames.get(event.id) ?? null,
         title: event.title,
         eventDate: event.event_date,
         eventTime: event.event_time,
