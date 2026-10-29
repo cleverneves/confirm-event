@@ -2,16 +2,13 @@ import { EventHero } from "./event-hero";
 import { EventMetrics } from "./event-metrics";
 import { DeleteEvent } from "./delete-event";
 import { OrganizersCard } from "./organizers-card";
-import { PresenceList } from "./presence-list";
 import type { PainelEvent } from "../_data-access/get-event";
 import type { EventOrganizer } from "../_data-access/get-organizers";
-import type { Presence } from "../_data-access/get-presences";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { canDeleteEvent } from "@/lib/event-roles";
 
 export function EventContent({
   event,
-  confirmations,
   total,
   confirmedLast24h,
   loadError,
@@ -19,7 +16,6 @@ export function EventContent({
   organizersLoadError,
 }: {
   event: PainelEvent;
-  confirmations: Presence[];
   total: number;
   confirmedLast24h: number;
   loadError?: string;
@@ -36,14 +32,7 @@ export function EventContent({
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
       ) : (
-        <>
-          <EventMetrics total={total} confirmedLast24h={confirmedLast24h} />
-          <PresenceList
-            eventId={event.id}
-            confirmations={confirmations}
-            total={total}
-          />
-        </>
+        <EventMetrics total={total} confirmedLast24h={confirmedLast24h} />
       )}
 
       <OrganizersCard

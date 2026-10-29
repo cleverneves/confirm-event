@@ -149,7 +149,9 @@ export function EventSideMenu({
   const isLg = useIsLgViewport();
   const isCollapsed = collapseOverride ?? !isLg;
 
+  const guestsHref = `/painel/eventos/${event.id}/convidados`;
   const settingsHref = `/painel/eventos/${event.id}/configuracoes`;
+  const isGuestsCurrent = pathname === guestsHref;
   const isSettingsCurrent = pathname === settingsHref;
 
   function handleToggleCollapse() {
@@ -166,7 +168,10 @@ export function EventSideMenu({
     >
       <MenuRow
         isCollapsed={isCollapsed}
+        isActive={isGuestsCurrent}
         label="Convidados"
+        href={guestsHref}
+        ariaCurrent={isGuestsCurrent ? "page" : undefined}
         icon={<UsersIcon aria-hidden="true" />}
       />
 

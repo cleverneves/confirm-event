@@ -2,7 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarIcon, Trash2Icon, UserRoundCheckIcon } from "lucide-react";
+import {
+  CalendarIcon,
+  CircleXIcon,
+  PencilIcon,
+  UserRoundCheckIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { deleteConfirmationAction } from "../_actions/delete-confirmation";
@@ -46,7 +51,7 @@ import {
 } from "@/components/ui/table";
 import { formatConfirmationDateTime } from "@/lib/event-date";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 function PresenceRow({
   eventId,
@@ -106,12 +111,14 @@ function PresenceRow({
               aria-hidden="true"
               className="size-5 shrink-0 text-[#16a34a]"
             />
-            <span className="font-medium">{confirmation.fullName}</span>
+            <span className="font-medium whitespace-nowrap">
+              {confirmation.fullName}
+            </span>
           </div>
         )}
       </TableCell>
-      <TableCell className="text-muted-foreground">
-        <span className="inline-flex items-center gap-2 [&_svg]:size-4">
+      <TableCell className="whitespace-nowrap text-muted-foreground">
+        <span className="inline-flex items-center gap-2 whitespace-nowrap [&_svg]:size-4">
           <CalendarIcon />
           {formatConfirmationDateTime(confirmation.createdAt)}
         </span>
@@ -145,17 +152,25 @@ function PresenceRow({
             <>
               <Button
                 type="button"
-                size="sm"
+                size="icon-sm"
                 variant="outline"
+                aria-label="Editar"
                 onClick={() => setIsEditing(true)}
               >
-                Editar
+                <PencilIcon />
+                <span className="sr-only">Editar</span>
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger
-                  render={<Button size="icon-sm" variant="destructive" />}
+                  render={
+                    <Button
+                      size="icon-sm"
+                      variant="destructive"
+                      aria-label="Remover"
+                    />
+                  }
                 >
-                  <Trash2Icon data-icon="inline-start" />
+                  <CircleXIcon />
                   <span className="sr-only">Remover</span>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -267,7 +282,7 @@ export function PresenceList({
           </Empty>
         ) : (
           <>
-            <Table>
+            <Table className="w-max min-w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome do convidado</TableHead>

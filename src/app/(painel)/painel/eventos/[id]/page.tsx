@@ -30,7 +30,6 @@ export default async function EventPage({
   return (
     <EventContent
       event={event}
-      confirmations={presences.confirmations}
       total={presences.total}
       confirmedLast24h={presences.confirmedLast24h}
       loadError={presences.error}

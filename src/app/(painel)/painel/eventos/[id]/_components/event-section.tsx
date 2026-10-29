@@ -21,8 +21,12 @@ export function EventSection({
   const [collapseOverride, setCollapseOverride] =
     useState<MenuCollapseOverride>(null);
 
-  const settingsPath = `/painel/eventos/${event.id}/configuracoes`;
+  const eventPath = `/painel/eventos/${event.id}`;
+  const guestsPath = `${eventPath}/convidados`;
+  const settingsPath = `${eventPath}/configuracoes`;
+  const isGuestsPage = pathname === guestsPath;
   const isSettingsPage = pathname === settingsPath;
+  const isSubAreaPage = isGuestsPage || isSettingsPage;
 
   return (
     <div className="flex flex-col gap-4">
@@ -34,16 +38,15 @@ export function EventSection({
           Meus Eventos
         </Link>
         <span aria-hidden="true">/</span>
-        {isSettingsPage ? (
+        {isSubAreaPage ? (
           <>
-            <Link
-              href={`/painel/eventos/${event.id}`}
-              className="hover:text-foreground"
-            >
+            <Link href={eventPath} className="hover:text-foreground">
               {event.title}
             </Link>
             <span aria-hidden="true">/</span>
-            <span className="text-foreground">Configurações</span>
+            <span className="text-foreground">
+              {isGuestsPage ? "Convidados" : "Configurações"}
+            </span>
           </>
         ) : (
           <span className="text-foreground">{event.title}</span>

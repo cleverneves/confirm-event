@@ -62,6 +62,7 @@ export async function updateConfirmationAction(
   }
 
   revalidatePath(`/painel/eventos/${eventId}`);
+  revalidatePath(`/painel/eventos/${eventId}/convidados`);
   if (event?.slug) {
     revalidatePath(`/${event.slug}`);
   }
