@@ -1,10 +1,12 @@
 "use client";
 
+import { DeleteEvent } from "./delete-event";
 import { EventSettingsForm } from "./event-settings-form";
 import { OrganizersCard } from "./organizers-card";
 import { settingsFormKey } from "../_lib/settings-form-key";
 import type { PainelEvent } from "../_data-access/get-event";
 import type { EventOrganizer } from "../_data-access/get-organizers";
+import { canDeleteEvent } from "@/lib/event-roles";
 
 export function EventSettingsPageContent({
   event,
@@ -27,6 +29,9 @@ export function EventSettingsPageContent({
         organizers={organizers}
         loadError={organizersLoadError}
       />
+      {canDeleteEvent(event.viewerRole) ? (
+        <DeleteEvent eventId={event.id} />
+      ) : null}
     </div>
   );
 }

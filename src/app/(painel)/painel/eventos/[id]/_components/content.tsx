@@ -1,9 +1,7 @@
 import { EventHero } from "./event-hero";
 import { EventMetrics } from "./event-metrics";
-import { DeleteEvent } from "./delete-event";
 import type { PainelEvent } from "../_data-access/get-event";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { canDeleteEvent } from "@/lib/event-roles";
 
 export function EventContent({
   event,
@@ -28,10 +26,6 @@ export function EventContent({
       ) : (
         <EventMetrics total={total} confirmedLast24h={confirmedLast24h} />
       )}
-
-      {canDeleteEvent(event.viewerRole) ? (
-        <DeleteEvent eventId={event.id} />
-      ) : null}
     </div>
   );
 }
