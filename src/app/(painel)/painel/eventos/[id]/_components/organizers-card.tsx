@@ -1,10 +1,9 @@
 import type { EventOrganizer } from "../_data-access/get-organizers";
 import { ProfileAvatar } from "../../../_components/profile-avatar";
-import { AddOrganizerForm } from "./add-organizer-form";
+import { AddOrganizerDialog } from "./add-organizer-form";
 import { LeaveEventButton } from "./leave-event-button";
 import { RemoveOrganizerButton } from "./remove-organizer-button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -63,19 +62,7 @@ export function OrganizersCard({
                     alt={organizer.name}
                     className="size-8"
                   />
-                  <div className="flex min-w-0 flex-col gap-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate font-medium">
-                      {organizer.name}
-                    </span>
-                    {organizer.isCreator ? (
-                      <Badge variant="secondary">Criador</Badge>
-                    ) : null}
-                  </div>
-                  <span className="truncate text-sm text-muted-foreground">
-                    {organizer.email}
-                  </span>
-                  </div>
+                  <span className="truncate font-medium">{organizer.name}</span>
                 </div>
                 {isManager && !organizer.isCreator ? (
                   <RemoveOrganizerButton
@@ -89,7 +76,7 @@ export function OrganizersCard({
           </ul>
         )}
 
-        {isManager ? <AddOrganizerForm eventId={eventId} /> : null}
+        {isManager ? <AddOrganizerDialog eventId={eventId} /> : null}
         {canLeaveEvent(role) ? <LeaveEventButton eventId={eventId} /> : null}
       </CardContent>
     </Card>

@@ -61,6 +61,7 @@ export async function addOrganizerAction(
   switch (outcome) {
     case "added":
       revalidatePath(`/painel/eventos/${eventId}`);
+      revalidatePath(`/painel/eventos/${eventId}/configuracoes`);
       return { success: true, message: "Organizador adicionado." };
     case "not_registered":
       return {

@@ -59,6 +59,7 @@ export async function removeOrganizerAction(
 
   revalidatePath("/painel");
   revalidatePath(`/painel/eventos/${eventId}`);
+  revalidatePath(`/painel/eventos/${eventId}/configuracoes`);
 
   return { success: true, message: "Organizador removido." };
 }

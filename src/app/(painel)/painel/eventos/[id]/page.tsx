@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 
 import { EventContent } from "./_components/content";
 import { getPainelEvent, parseEventId } from "./_data-access/get-event";
-import { getEventOrganizers } from "./_data-access/get-organizers";
 import { getPresences } from "./_data-access/get-presences";
 
 export default async function EventPage({
@@ -17,10 +16,9 @@ export default async function EventPage({
     notFound();
   }
 
-  const [event, presences, organizers] = await Promise.all([
+  const [event, presences] = await Promise.all([
     getPainelEvent(eventId),
     getPresences(eventId),
-    getEventOrganizers(eventId),
   ]);
 
   if (!event) {
@@ -33,8 +31,6 @@ export default async function EventPage({
       total={presences.total}
       confirmedLast24h={presences.confirmedLast24h}
       loadError={presences.error}
-      organizers={organizers.organizers}
-      organizersLoadError={organizers.error}
     />
   );
 }
