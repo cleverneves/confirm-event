@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   hasLayoutAspect,
@@ -144,6 +144,20 @@ export function useIllustrationField({
     return true;
   }
 
+  const resetIllustrationDraft = useCallback(() => {
+    clearSelectedFile();
+    setFileError(null);
+    setShouldRemoveIllustration(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, [objectUrl]);
+
+  const isIllustrationDraftDirty =
+    selectedFile !== null ||
+    shouldRemoveIllustration ||
+    persistedLayout !== selectedLayout;
+
   return {
     fileInputRef,
     fileError,
@@ -153,9 +167,11 @@ export function useIllustrationField({
     hasAspectWarning,
     inputId,
     isImageRequired: selectedLayout === "image_only",
+    isIllustrationDraftDirty,
     handleFileChange,
     handleRemoveIllustration,
     appendIllustrationToFormData,
     validateImageOnlyLayout,
+    resetIllustrationDraft,
   };
 }

@@ -13,23 +13,21 @@ import {
   resolvePageLayoutSave,
 } from "@/lib/event-illustration-server";
 import {
-  confirmationWindowColumns,
-  eventSettingsFromFormData,
-  makeEventSettingsSchema,
-  maxGuestCapacityColumn,
-  type EventSettingsFieldErrors,
+  eventVisualSettingsFromFormData,
+  makeEventVisualSettingsSchema,
+  type EventVisualSettingsFieldErrors,
 } from "@/lib/event-schema";
 
-export type UpdateEventSettingsResult = {
+export type UpdateEventVisualSettingsResult = {
   success: boolean;
   message?: string;
-  errors?: EventSettingsFieldErrors;
+  errors?: EventVisualSettingsFieldErrors;
 };
 
-export async function updateEventSettingsAction(
+export async function updateEventVisualSettingsAction(
   eventId: number,
   formData: FormData
-): Promise<UpdateEventSettingsResult> {
+): Promise<UpdateEventVisualSettingsResult> {
   const { supabase, role } = await requireEventAccess(eventId);
 
   if (!role) {
@@ -38,7 +36,7 @@ export async function updateEventSettingsAction(
 
   const { data: current, error: currentError } = await supabase
     .from("events")
-    .select("event_date, slug, page_layout, illustration_content_type")
+    .select("slug, page_layout, illustration_content_type")
     .eq("id", eventId)
     .maybeSingle();
 
@@ -49,20 +47,18 @@ export async function updateEventSettingsAction(
     };
   }
 
-  const validation = makeEventSettingsSchema(current.event_date).safeParse(
-    eventSettingsFromFormData(formData)
+  const validation = makeEventVisualSettingsSchema().safeParse(
+    eventVisualSettingsFromFormData(formData)
   );
 
   if (!validation.success) {
-    const errors = validation.error.flatten().fieldErrors as EventSettingsFieldErrors;
+    const errors = validation.error.flatten()
+      .fieldErrors as EventVisualSettingsFieldErrors;
 
     return {
       success: false,
       errors,
-      message:
-        errors.confirmationStartsOn || errors.confirmationEndsOn
-          ? "Ajuste a janela de confirmação ou deixe as duas datas vazias."
-          : "Confira os dados informados.",
+      message: "Confira os dados informados.",
     };
   }
 
@@ -83,14 +79,9 @@ export async function updateEventSettingsAction(
     };
   }
 
-  const window = confirmationWindowColumns(validation.data);
-
   const { data: updated, error } = await supabase
     .from("events")
     .update({
-      ...maxGuestCapacityColumn(validation.data),
-      confirmation_starts_on: window.confirmation_starts_on,
-      confirmation_ends_on: window.confirmation_ends_on,
       page_layout: resolved.pageLayout,
       updated_at: new Date().toISOString(),
       ...illustrationColumns(resolved.illustration),

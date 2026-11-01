@@ -38,27 +38,37 @@ const eventOccasionObject = z.object({
   address: z.string().trim().min(1, "Informe o endereço"),
 });
 
-const eventSettingsObject = z.object({
+const eventGeneralSettingsObject = z.object({
   maxGuestCapacity: z.string(),
-  layout: z.enum(PAGE_LAYOUTS),
   confirmationStartsOn: z.string(),
   confirmationEndsOn: z.string(),
+});
+
+const eventVisualSettingsObject = z.object({
+  layout: z.enum(PAGE_LAYOUTS),
 });
 
 export const EVENT_DATE_INVALIDATES_WINDOW_MESSAGE =
   "Essa data deixa a janela de confirmação inválida. Ajuste ou limpe a janela em Configurações.";
 
-export type EventSettingsFields = z.infer<typeof eventSettingsObject>;
+export type EventGeneralSettingsFields = z.infer<
+  typeof eventGeneralSettingsObject
+>;
+
+export type EventVisualSettingsFields = z.infer<
+  typeof eventVisualSettingsObject
+>;
 
 export type EventOccasionFields = z.infer<typeof eventOccasionObject>;
 
-export type EventSettingsFieldErrors = Pick<
+export type EventGeneralSettingsFieldErrors = Pick<
   EventFieldErrors,
-  | "maxGuestCapacity"
-  | "layout"
-  | "confirmationStartsOn"
-  | "confirmationEndsOn"
-  | "illustration"
+  "maxGuestCapacity" | "confirmationStartsOn" | "confirmationEndsOn"
+>;
+
+export type EventVisualSettingsFieldErrors = Pick<
+  EventFieldErrors,
+  "layout" | "illustration"
 >;
 
 export const eventFieldsSchema = eventFieldsObject.superRefine((data, ctx) => {
@@ -66,8 +76,8 @@ export const eventFieldsSchema = eventFieldsObject.superRefine((data, ctx) => {
   refineMaxGuestCapacity(data, ctx);
 });
 
-export function makeEventSettingsSchema(savedEventDate: string) {
-  return eventSettingsObject.superRefine((data, ctx) => {
+export function makeEventGeneralSettingsSchema(savedEventDate: string) {
+  return eventGeneralSettingsObject.superRefine((data, ctx) => {
     refineConfirmationWindow(
       {
         confirmationStartsOn: data.confirmationStartsOn,
@@ -78,6 +88,10 @@ export function makeEventSettingsSchema(savedEventDate: string) {
     );
     refineMaxGuestCapacity({ maxGuestCapacity: data.maxGuestCapacity }, ctx);
   });
+}
+
+export function makeEventVisualSettingsSchema() {
+  return eventVisualSettingsObject;
 }
 
 export function makeEventOccasionSchema(currentDate?: string) {
@@ -107,12 +121,23 @@ export function eventOccasionFromFormData(formData: FormData): EventOccasionFiel
   };
 }
 
-export function eventSettingsFromFormData(formData: FormData): EventSettingsFields {
+export function eventGeneralSettingsFromFormData(
+  formData: FormData
+): EventGeneralSettingsFields {
   return {
     maxGuestCapacity: String(formData.get("maxGuestCapacity") ?? ""),
-    layout: String(formData.get("layout") ?? "") as EventSettingsFields["layout"],
     confirmationStartsOn: String(formData.get("confirmationStartsOn") ?? ""),
     confirmationEndsOn: String(formData.get("confirmationEndsOn") ?? ""),
+  };
+}
+
+export function eventVisualSettingsFromFormData(
+  formData: FormData
+): EventVisualSettingsFields {
+  return {
+    layout: String(
+      formData.get("layout") ?? ""
+    ) as EventVisualSettingsFields["layout"],
   };
 }
 

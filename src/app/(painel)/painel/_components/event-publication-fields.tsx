@@ -28,12 +28,17 @@ import {
 } from "@/lib/event-illustration";
 import { cn } from "@/lib/utils";
 
-type PublicationShape = {
+type PublicationLayoutShape = {
   layout: EventPageLayout;
+};
+
+type PublicationGeneralShape = {
   maxGuestCapacity: string;
   confirmationStartsOn: string;
   confirmationEndsOn: string;
 };
+
+type PublicationShape = PublicationLayoutShape & PublicationGeneralShape;
 
 const LAYOUT_OPTIONS: {
   value: EventPageLayout;
@@ -49,12 +54,14 @@ const LAYOUT_OPTIONS: {
     },
   ];
 
-export function EventLayoutField<T extends FieldValues & PublicationShape>({
+export function EventLayoutField<T extends FieldValues & PublicationLayoutShape>({
   control,
   idPrefix,
+  layoutGridClassName = "grid-cols-2",
 }: {
   control: Control<T>;
   idPrefix: string;
+  layoutGridClassName?: string;
 }) {
   return (
     <Controller
@@ -67,7 +74,7 @@ export function EventLayoutField<T extends FieldValues & PublicationShape>({
             value={field.value}
             onValueChange={field.onChange}
             aria-invalid={fieldState.invalid}
-            className="grid grid-cols-2 gap-3"
+            className={cn("grid gap-3", layoutGridClassName)}
           >
             {LAYOUT_OPTIONS.map((option) => {
               const inputId = `${idPrefix}-layout-${option.value === "personalized" ? "personalized" : "image-only"}`;
@@ -169,7 +176,9 @@ export function EventIllustrationField({
   );
 }
 
-export function EventCapacityField<T extends FieldValues & PublicationShape>({
+export function EventCapacityField<
+  T extends FieldValues & PublicationGeneralShape,
+>({
   control,
   idPrefix,
 }: {
@@ -202,7 +211,7 @@ export function EventCapacityField<T extends FieldValues & PublicationShape>({
 }
 
 export function EventConfirmationWindowFields<
-  T extends FieldValues & PublicationShape,
+  T extends FieldValues & PublicationGeneralShape,
 >({
   control,
   idPrefix,
