@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PlusIcon } from "lucide-react";
-
 import { logoutAction } from "../_actions/logout";
 import { ProfileAvatar } from "./profile-avatar";
 import { Button } from "@/components/ui/button";
@@ -17,8 +15,6 @@ export function PainelHeader({
   imageUrl: string | null;
 }) {
   const pathname = usePathname();
-  const isMeusEventos =
-    pathname === "/painel" || /^\/painel\/eventos\/\d+/.test(pathname);
   const isMeuPerfil =
     pathname === "/painel/perfil" || pathname.startsWith("/painel/perfil/");
 
@@ -34,15 +30,6 @@ export function PainelHeader({
           </Link>
           <nav className="flex items-center gap-1">
             <Link
-              href="/painel"
-              className={cn(
-                "rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
-                isMeusEventos && "text-foreground"
-              )}
-            >
-              Meus Eventos
-            </Link>
-            <Link
               href="/painel/perfil"
               className={cn(
                 "rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
@@ -54,13 +41,6 @@ export function PainelHeader({
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            render={<Link href="/painel/eventos/novo" />}
-            nativeButton={false}
-          >
-            <PlusIcon data-icon="inline-start" />
-            Novo Evento
-          </Button>
           <form action={logoutAction} className="flex min-w-0 items-center gap-3">
             <div className="flex min-w-0 max-w-[min(12rem,40vw)] items-center gap-2 sm:max-w-48">
               <ProfileAvatar

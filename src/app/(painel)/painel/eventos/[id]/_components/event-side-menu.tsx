@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  CalendarDaysIcon,
   PanelLeftClose,
   PanelLeftOpen,
   SettingsIcon,
@@ -168,10 +169,18 @@ export function EventSideMenu({
     >
       <MenuRow
         isCollapsed={isCollapsed}
+        label="Meus Eventos"
+        href="/painel"
+        icon={<CalendarDaysIcon aria-hidden="true" />}
+      />
+
+      <MenuRow
+        isCollapsed={isCollapsed}
         isActive={isGuestsCurrent}
         label="Convidados"
         href={guestsHref}
         ariaCurrent={isGuestsCurrent ? "page" : undefined}
+        className="mt-2 border-t border-border pt-2"
         icon={<UsersIcon aria-hidden="true" />}
       />
 
