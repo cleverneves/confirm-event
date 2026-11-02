@@ -83,7 +83,7 @@ export function ProfileContent({
           Painel
         </p>
         <h1 className="font-heading text-3xl leading-none tracking-tight">
-          Meu perfil
+          Configurações
         </h1>
         <p className="text-muted-foreground">
           Nome e sobrenome são obrigatórios. Telefone e empresa são opcionais.

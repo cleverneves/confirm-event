@@ -5,7 +5,7 @@ type OrganizerIdentity = {
 };
 
 /**
- * Nome exibido de uma conta organizadora: nome e sobrenome gravados em Meu perfil,
+ * Nome exibido de uma conta organizadora: nome e sobrenome gravados em Configurações,
  * nesta ordem. Faltando um dos dois, usa o e-mail da conta (o texto nunca fica vazio).
  */
 export function organizerDisplayName({
